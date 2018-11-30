@@ -111,7 +111,7 @@
   <meta name="description" content="写入文件文件的数据都是记录在inode中的文件块中，在该文件系统的设计中，只用了12个直接块和一个间接块来存储文件，所以一个文件最大可以存放 140 * 512字节的数据。 写文件的过程对文件块和扇区的分配过程，根据当前要写入的数据量大小，来判断是否需要分配新的数据块。如果12个直接块不够存储该数据，就分配间接块来存储，当所需的数据块分配好了之后，就会逐块的往硬盘上写入数据，知道所有的数据被写入硬">
 <meta property="og:type" content="article">
 <meta property="og:title" content="十八. 文件系统四(文件的读写与删除)">
-<meta property="og:url" content="http://yoursite.com/2018/05/15/filesystem4/index.html">
+<meta property="og:url" content="https://modifying.github.io/2018/05/15/filesystem4/index.html">
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="写入文件文件的数据都是记录在inode中的文件块中，在该文件系统的设计中，只用了12个直接块和一个间接块来存储文件，所以一个文件最大可以存放 140 * 512字节的数据。 写文件的过程对文件块和扇区的分配过程，根据当前要写入的数据量大小，来判断是否需要分配新的数据块。如果12个直接块不够存储该数据，就分配间接块来存储，当所需的数据块分配好了之后，就会逐块的往硬盘上写入数据，知道所有的数据被写入硬">
 <meta property="og:locale" content="zh-Hans">
@@ -127,7 +127,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/05/15/filesystem4/">
+  <link rel="canonical" href="https://modifying.github.io/2018/05/15/filesystem4/">
 
 
 
@@ -144,6 +144,16 @@
 
 
 
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?2fa2044c78f4a75b300904570ea19f8f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
@@ -205,7 +215,7 @@
   </div>
 
   <div class="site-nav-toggle">
-    <button aria-label="Toggle navigation bar">
+    <button aria-label="切换导航栏">
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
@@ -233,7 +243,41 @@
 
     
 
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
 
   </li>
         
@@ -250,7 +294,7 @@
 
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
 
   </li>
 
@@ -302,12 +346,12 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/15/filesystem4/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/15/filesystem4/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
@@ -337,14 +381,14 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-05-15 12:37:36" itemprop="dateCreated datePublished" datetime="2018-05-15T12:37:36+08:00">2018-05-15</time>
+              <time title="创建时间：2018-05-15 12:37:36" itemprop="dateCreated datePublished" datetime="2018-05-15T12:37:36+08:00">2018-05-15</time>
             
 
             
@@ -359,7 +403,7 @@
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
@@ -515,10 +559,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
+            文章目录
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
+            站点概览
           </li>
         </ul>
       
@@ -527,7 +571,7 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="melody">
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="melody">
             
               <p class="site-author-name" itemprop="name">melody</p>
               <p class="site-description motion-element" itemprop="description"></p>
@@ -541,7 +585,7 @@
                   <a href="/archives/">
                 
                     <span class="site-state-item-count">31</span>
-                    <span class="site-state-item-name">posts</span>
+                    <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
               
@@ -558,7 +602,7 @@
                       
                     
                     <span class="site-state-item-count">2</span>
-                    <span class="site-state-item-name">categories</span>
+                    <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
               
@@ -569,6 +613,32 @@
 
           
 
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/melodywei" title="GitHub &rarr; https://github.com/melodywei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:melodywei97@gmail.com" title="E-Mail &rarr; mailto:melodywei97@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
           
 
           
@@ -626,7 +696,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
 
 
 
@@ -634,7 +704,7 @@
 
 
 
-  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
 
 
 

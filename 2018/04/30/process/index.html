@@ -111,7 +111,7 @@
   <meta name="description" content="TSS单核CPU想要实现多任务，唯一的方案就是多个任务共享同一个CPU，也就是让CPU在多个任务间轮转。 CPU执行任务时，需要把任务运行所需要的数据加载到寄存器、栈和内存中，因为CPU只能直接处理这些数据，这是CPU在设计上就直接决定的。任务的数据和指令是CPU的处理对象，任务的执行会占用寄存器和内存。 内存相对于CPU来说是低速设备，里面的数据往往被加载到高速寄存器之后被CPU处理，再将结果写">
 <meta property="og:type" content="article">
 <meta property="og:title" content="十二. 实现用户进程">
-<meta property="og:url" content="http://yoursite.com/2018/04/30/process/index.html">
+<meta property="og:url" content="https://modifying.github.io/2018/04/30/process/index.html">
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="TSS单核CPU想要实现多任务，唯一的方案就是多个任务共享同一个CPU，也就是让CPU在多个任务间轮转。 CPU执行任务时，需要把任务运行所需要的数据加载到寄存器、栈和内存中，因为CPU只能直接处理这些数据，这是CPU在设计上就直接决定的。任务的数据和指令是CPU的处理对象，任务的执行会占用寄存器和内存。 内存相对于CPU来说是低速设备，里面的数据往往被加载到高速寄存器之后被CPU处理，再将结果写">
 <meta property="og:locale" content="zh-Hans">
@@ -131,7 +131,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/04/30/process/">
+  <link rel="canonical" href="https://modifying.github.io/2018/04/30/process/">
 
 
 
@@ -148,6 +148,16 @@
 
 
 
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?2fa2044c78f4a75b300904570ea19f8f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
@@ -209,7 +219,7 @@
   </div>
 
   <div class="site-nav-toggle">
-    <button aria-label="Toggle navigation bar">
+    <button aria-label="切换导航栏">
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
@@ -237,7 +247,41 @@
 
     
 
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
 
   </li>
         
@@ -254,7 +298,7 @@
 
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
 
   </li>
 
@@ -306,12 +350,12 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/30/process/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/30/process/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
@@ -341,14 +385,14 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
               
 
-              <time title="Created: 2018-04-30 23:57:08" itemprop="dateCreated datePublished" datetime="2018-04-30T23:57:08+08:00">2018-04-30</time>
+              <time title="创建时间：2018-04-30 23:57:08" itemprop="dateCreated datePublished" datetime="2018-04-30T23:57:08+08:00">2018-04-30</time>
             
 
             
@@ -363,7 +407,7 @@
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">分类于</span>
               
               
                 <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
@@ -533,10 +577,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
+            文章目录
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
+            站点概览
           </li>
         </ul>
       
@@ -545,7 +589,7 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="melody">
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="melody">
             
               <p class="site-author-name" itemprop="name">melody</p>
               <p class="site-description motion-element" itemprop="description"></p>
@@ -559,7 +603,7 @@
                   <a href="/archives/">
                 
                     <span class="site-state-item-count">31</span>
-                    <span class="site-state-item-name">posts</span>
+                    <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
               
@@ -576,7 +620,7 @@
                       
                     
                     <span class="site-state-item-count">2</span>
-                    <span class="site-state-item-name">categories</span>
+                    <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
               
@@ -587,6 +631,32 @@
 
           
 
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/melodywei" title="GitHub &rarr; https://github.com/melodywei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:melodywei97@gmail.com" title="E-Mail &rarr; mailto:melodywei97@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
           
 
           
@@ -644,7 +714,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
 
 
 
@@ -652,7 +722,7 @@
 
 
 
-  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
 
 
 
