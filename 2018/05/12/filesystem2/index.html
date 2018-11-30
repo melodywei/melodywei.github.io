@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="在前面一节中介绍了文件系统的基本概念，接下来就要准备开始实现我们的文件系统，下面是为管理文件系统提供的几个基础数据结构。 超级块的结构1234567891011121314151617181920212223/* 超级块 */struct super_block&amp;#123;    uint32_t magic;         // 用来标识文件系统类型,支持多文件系统的操作系统通过此标志来识别文">
+<meta property="og:type" content="article">
+<meta property="og:title" content="十六. 文件系统二(创建文件系统)">
+<meta property="og:url" content="http://yoursite.com/2018/05/12/filesystem2/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="在前面一节中介绍了文件系统的基本概念，接下来就要准备开始实现我们的文件系统，下面是为管理文件系统提供的几个基础数据结构。 超级块的结构1234567891011121314151617181920212223/* 超级块 */struct super_block&amp;#123;    uint32_t magic;         // 用来标识文件系统类型,支持多文件系统的操作系统通过此标志来识别文">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/HhF1eH9mmh.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180512/CKCDFCB5J5.png?imageslim">
+<meta property="og:updated_time" content="2018-05-12T15:39:16.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="十六. 文件系统二(创建文件系统)">
+<meta name="twitter:description" content="在前面一节中介绍了文件系统的基本概念，接下来就要准备开始实现我们的文件系统，下面是为管理文件系统提供的几个基础数据结构。 超级块的结构1234567891011121314151617181920212223/* 超级块 */struct super_block&amp;#123;    uint32_t magic;         // 用来标识文件系统类型,支持多文件系统的操作系统通过此标志来识别文">
+<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/HhF1eH9mmh.png?imageslim">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/12/filesystem2/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>十六. 文件系统二(创建文件系统) | melodyのblog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/12/filesystem2/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">十六. 文件系统二(创建文件系统)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-05-12 23:39:16" itemprop="dateCreated datePublished" datetime="2018-05-12T23:39:16+08:00">2018-05-12</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在前面一节中介绍了文件系统的基本概念，接下来就要准备开始实现我们的文件系统，下面是为管理文件系统提供的几个基础数据结构。</p>
+<p>超级块的结构<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 超级块 */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">super_block</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> magic;         <span class="comment">// 用来标识文件系统类型,支持多文件系统的操作系统通过此标志来识别文件系统类型</span></span><br><span class="line">    <span class="keyword">uint32_t</span> sec_cnt;       <span class="comment">// 本分区总共的扇区数</span></span><br><span class="line">    <span class="keyword">uint32_t</span> inode_cnt;     <span class="comment">// 本分区中inode数量</span></span><br><span class="line">    <span class="keyword">uint32_t</span> part_lba_base; <span class="comment">// 本分区的起始lba地址</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> block_bitmap_lba;   <span class="comment">// 块位图本身起始扇区地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> block_bitmap_sects; <span class="comment">// 扇区位图本身占用的扇区数量</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> inode_bitmap_lba;   <span class="comment">// inode位图起始扇区lba地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> inode_bitmap_sects; <span class="comment">// inode位图占用的扇区数量</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> inode_table_lba;   <span class="comment">// inode表起始扇区lba地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> inode_table_sects; <span class="comment">// inode表占用的扇区数量</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> data_start_lba; <span class="comment">// 数据区开始的第一个扇区号</span></span><br><span class="line">    <span class="keyword">uint32_t</span> root_inode_no;  <span class="comment">// 根目录所在的I结点号</span></span><br><span class="line">    <span class="keyword">uint32_t</span> dir_entry_size; <span class="comment">// 目录项大小</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint8_t</span> pad[<span class="number">460</span>]; <span class="comment">// 加上460字节,凑够512字节1扇区大小</span></span><br><span class="line">&#125; __attribute__((packed));</span><br></pre></td></tr></table></figure></p>
+<p>inode的结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">inode</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> i_no;  <span class="comment">// inode编号</span></span><br><span class="line">    <span class="keyword">uint32_t</span> i_size; <span class="comment">// 此inode为文件时，表示文件的大小。为目录时，表示该目录下所有目录项大小之和 </span></span><br><span class="line">    <span class="keyword">uint32_t</span> i_open_cnts; <span class="comment">// 文件被打开的次数</span></span><br><span class="line">    <span class="keyword">bool</span> write_deny;  <span class="comment">// 写文件的标识，防止多个进行同时对一个文件写</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> i_sectors[<span class="number">13</span>]; <span class="comment">// 一个文件只支持13个块，12个直接块，1个间接块。在这个文件系统中，块的大小直接等于1扇区</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list_elem</span> <span class="title">inode_tag</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>目录和目录项的结构</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> file_types </span><br><span class="line">&#123;</span><br><span class="line">    FT_UNKNOWN,   </span><br><span class="line">    FT_REGULAR,   </span><br><span class="line">    FT_DIRECTORY  </span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dir</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *<span class="title">inode</span>;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> dir_pos;</span><br><span class="line">    <span class="keyword">uint8_t</span> dir_buf[<span class="number">512</span>];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dir_entry</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">char</span> filename[MAX_FILE_NAME_LEN]; <span class="comment">// 普通文件或目录名称</span></span><br><span class="line">    <span class="keyword">uint32_t</span> i_no;</span><br><span class="line">    <span class="keyword">enum</span> file_types f_type;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>有了这些结构之后，第一步要做的工作就是对硬盘上的分区进行格式化</p>
+<p>创建的步骤如下</p>
+<ol>
+<li>根据分区大小，计算分区文件系统各元信息需要的扇区数及位置</li>
+<li>在内存中创建超级块，将上面的元信息写入超级块</li>
+<li>将超级块写入磁盘</li>
+<li>将元信息写入磁盘上各自的位置</li>
+<li>将根目录写入磁盘</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">partition_format</span><span class="params">(struct partition *part)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">uint32_t</span> boot_sector_sects = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">uint32_t</span> super_block_sects = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">uint32_t</span> inode_bitmap_sects = DIV_ROUND_UP(MAX_FILES_PER_PART, BITS_PER_SECTOR); <span class="comment">// inode位图占用的扇区数.最多支持4096个文件</span></span><br><span class="line">	<span class="keyword">uint32_t</span> inode_table_sects = DIV_ROUND_UP(((<span class="keyword">sizeof</span>(struct inode) * MAX_FILES_PER_PART)), SECTOR_SIZE);</span><br><span class="line">	<span class="keyword">uint32_t</span> used_sects = boot_sector_sects + super_block_sects + inode_bitmap_sects + inode_table_sects;</span><br><span class="line">	<span class="keyword">uint32_t</span> free_sects = part-&gt;sec_cnt - used_sects;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/************** 简单处理块位图占据的扇区数 ***************/</span></span><br><span class="line">	<span class="keyword">uint32_t</span> block_bitmap_sects;</span><br><span class="line">	block_bitmap_sects = DIV_ROUND_UP(free_sects, BITS_PER_SECTOR);</span><br><span class="line">	<span class="comment">/* block_bitmap_bit_len是位图中位的长度,也是可用块的数量 */</span></span><br><span class="line">	<span class="keyword">uint32_t</span> block_bitmap_bit_len = free_sects - block_bitmap_sects;</span><br><span class="line">	block_bitmap_sects = DIV_ROUND_UP(block_bitmap_bit_len, BITS_PER_SECTOR);</span><br><span class="line">	<span class="comment">/*********************************************************/</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 超级块初始化 */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> <span class="title">sb</span>;</span></span><br><span class="line">	sb.magic = <span class="number">0x19971234</span>;</span><br><span class="line">	sb.sec_cnt = part-&gt;sec_cnt;</span><br><span class="line">	sb.inode_cnt = MAX_FILES_PER_PART;</span><br><span class="line">	sb.part_lba_base = part-&gt;start_lba;</span><br><span class="line"></span><br><span class="line">	sb.block_bitmap_lba = sb.part_lba_base + <span class="number">2</span>; <span class="comment">// 第0块是引导块,第1块是超级块</span></span><br><span class="line">	sb.block_bitmap_sects = block_bitmap_sects;</span><br><span class="line"></span><br><span class="line">	sb.inode_bitmap_lba = sb.block_bitmap_lba + sb.block_bitmap_sects;</span><br><span class="line">	sb.inode_bitmap_sects = inode_bitmap_sects;</span><br><span class="line"></span><br><span class="line">	sb.inode_table_lba = sb.inode_bitmap_lba + sb.inode_bitmap_sects;</span><br><span class="line">	sb.inode_table_sects = inode_table_sects;</span><br><span class="line"></span><br><span class="line">	sb.data_start_lba = sb.inode_table_lba + sb.inode_table_sects;</span><br><span class="line">	sb.root_inode_no = <span class="number">0</span>;</span><br><span class="line">	sb.dir_entry_size = <span class="keyword">sizeof</span>(struct dir_entry);</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">disk</span> *<span class="title">hd</span> = <span class="title">part</span>-&gt;<span class="title">my_disk</span>;</span></span><br><span class="line">	</span><br><span class="line">    <span class="comment">//1 将超级块写入本分区的1扇区</span></span><br><span class="line">	ide_write(hd, part-&gt;start_lba + <span class="number">1</span>, &amp;sb, <span class="number">1</span>);</span><br><span class="line">	printk(<span class="string">"   super_block_lba:0x%x\n"</span>, part-&gt;start_lba + <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 找出数据量最大的元信息,用其尺寸做存储缓冲区*/</span></span><br><span class="line">	<span class="keyword">uint32_t</span> buf_size = (sb.block_bitmap_sects &gt;= sb.inode_bitmap_sects ? sb.block_bitmap_sects : sb.inode_bitmap_sects);</span><br><span class="line">	buf_size = (buf_size &gt;= sb.inode_table_sects ? buf_size : sb.inode_table_sects) * SECTOR_SIZE;</span><br><span class="line">	<span class="keyword">uint8_t</span> *buf = (<span class="keyword">uint8_t</span> *)sys_malloc(buf_size); <span class="comment">// 申请的内存由内存管理系统清0后返回</span></span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">    <span class="comment">//2 将块位图初始化并写入sb.block_bitmap_lba </span></span><br><span class="line">    </span><br><span class="line">	<span class="comment">/* 初始化块位图block_bitmap */</span></span><br><span class="line">	buf[<span class="number">0</span>] |= <span class="number">0x01</span>; <span class="comment">// 第0个块预留给根目录,位图中先占位</span></span><br><span class="line">	<span class="keyword">uint32_t</span> block_bitmap_last_byte = block_bitmap_bit_len / <span class="number">8</span>;</span><br><span class="line">	<span class="keyword">uint8_t</span> block_bitmap_last_bit = block_bitmap_bit_len % <span class="number">8</span>;</span><br><span class="line">	<span class="keyword">uint32_t</span> last_size = SECTOR_SIZE - (block_bitmap_last_byte % SECTOR_SIZE); <span class="comment">// last_size是位图所在最后一个扇区中，不足一扇区的其余部分</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 1 先将位图最后一字节到其所在的扇区的结束全置为1,即超出实际块数的部分直接置为已占用*/</span></span><br><span class="line">	<span class="built_in">memset</span>(&amp;buf[block_bitmap_last_byte], <span class="number">0xff</span>, last_size);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 2 再将上一步中覆盖的最后一字节内的有效位重新置0 */</span></span><br><span class="line">	<span class="keyword">uint8_t</span> bit_idx = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (bit_idx &lt;= block_bitmap_last_bit)</span><br><span class="line">	&#123;</span><br><span class="line">		buf[block_bitmap_last_byte] &amp;= ~(<span class="number">1</span> &lt;&lt; bit_idx++);</span><br><span class="line">	&#125;</span><br><span class="line">	ide_write(hd, sb.block_bitmap_lba, buf, sb.block_bitmap_sects);</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">    <span class="comment">//3 将inode位图初始化并写入sb.inode_bitmap_lba </span></span><br><span class="line"> </span><br><span class="line">	<span class="comment">/* 先清空缓冲区*/</span></span><br><span class="line">	<span class="built_in">memset</span>(buf, <span class="number">0</span>, buf_size);</span><br><span class="line">	buf[<span class="number">0</span>] |= <span class="number">0x1</span>; <span class="comment">// 第0个inode分给了根目录</span></span><br><span class="line">	<span class="comment">/* 由于inode_table中共4096个inode,位图inode_bitmap正好占用1扇区,</span></span><br><span class="line"><span class="comment">      * 即inode_bitmap_sects等于1, 所以位图中的位全都代表inode_table中的inode,</span></span><br><span class="line"><span class="comment">      * 无须再像block_bitmap那样单独处理最后一扇区的剩余部分,</span></span><br><span class="line"><span class="comment">      * inode_bitmap所在的扇区中没有多余的无效位 */</span></span><br><span class="line">	ide_write(hd, sb.inode_bitmap_lba, buf, sb.inode_bitmap_sects);</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 4 将inode数组初始化并写入sb.inode_table_lba </span></span><br><span class="line">    </span><br><span class="line">	<span class="comment">/* 准备写inode_table中的第0项,即根目录所在的inode */</span></span><br><span class="line">	<span class="built_in">memset</span>(buf, <span class="number">0</span>, buf_size); <span class="comment">// 先清空缓冲区buf</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *<span class="title">i</span> = (<span class="title">struct</span> <span class="title">inode</span> *)<span class="title">buf</span>;</span></span><br><span class="line">	i-&gt;i_size = sb.dir_entry_size * <span class="number">2</span>;   <span class="comment">// .和..</span></span><br><span class="line">	i-&gt;i_no = <span class="number">0</span>;						 <span class="comment">// 根目录占inode数组中第0个inode</span></span><br><span class="line">	i-&gt;i_sectors[<span class="number">0</span>] = sb.data_start_lba; <span class="comment">// 由于上面的memset,i_sectors数组的其它元素都初始化为0</span></span><br><span class="line">	ide_write(hd, sb.inode_table_lba, buf, sb.inode_table_sects);</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">    <span class="comment">//5 将根目录初始化并写入sb.data_start_lba</span></span><br><span class="line">    </span><br><span class="line">	<span class="comment">/* 写入根目录的两个目录项.和.. */</span></span><br><span class="line">	<span class="built_in">memset</span>(buf, <span class="number">0</span>, buf_size);</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dir_entry</span> *<span class="title">p_de</span> = (<span class="title">struct</span> <span class="title">dir_entry</span> *)<span class="title">buf</span>;</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 初始化当前目录"." */</span></span><br><span class="line">	<span class="built_in">memcpy</span>(p_de-&gt;filename, <span class="string">"."</span>, <span class="number">1</span>);</span><br><span class="line">	p_de-&gt;i_no = <span class="number">0</span>;</span><br><span class="line">	p_de-&gt;f_type = FT_DIRECTORY;</span><br><span class="line">	p_de++;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 初始化当前目录父目录".." */</span></span><br><span class="line">	<span class="built_in">memcpy</span>(p_de-&gt;filename, <span class="string">".."</span>, <span class="number">2</span>);</span><br><span class="line">	p_de-&gt;i_no = <span class="number">0</span>; <span class="comment">// 根目录的父目录依然是根目录自己</span></span><br><span class="line">	p_de-&gt;f_type = FT_DIRECTORY;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* sb.data_start_lba已经分配给了根目录,里面是根目录的目录项 */</span></span><br><span class="line">	ide_write(hd, sb.data_start_lba, buf, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	printk(<span class="string">"   root_dir_lba:0x%x\n"</span>, sb.data_start_lba);</span><br><span class="line">	printk(<span class="string">"%s format done\n"</span>, part-&gt;name);</span><br><span class="line">	sys_free(buf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数的主要功能实际上就是按照我们对文件系统的规划，将硬盘每一个分区中的信息进行了初始化。这些数据就是用来记录硬盘分区的基本信息，将下图中的信息确定并保留下来。</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180508/HhF1eH9mmh.png?imageslim" alt="mark"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 在磁盘上搜索文件系统,若没有则格式化分区创建文件系统 */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">filesys_init</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">uint8_t</span> channel_no = <span class="number">0</span>, dev_no, part_idx = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* sb_buf用来存储从硬盘上读入的超级块 */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">sb_buf</span> = (<span class="title">struct</span> <span class="title">super_block</span> *)<span class="title">sys_malloc</span>(<span class="title">SECTOR_SIZE</span>);</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (sb_buf == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		PANIC(<span class="string">"alloc memory failed!"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	printk(<span class="string">"searching filesystem......\n"</span>);</span><br><span class="line">	<span class="keyword">while</span> (channel_no &lt; channel_cnt)</span><br><span class="line">	&#123;</span><br><span class="line">		dev_no = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">while</span> (dev_no &lt; <span class="number">2</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (dev_no == <span class="number">0</span>)</span><br><span class="line">			&#123; </span><br><span class="line">                <span class="comment">// 跨过第一个裸盘，在模拟器中的第二块硬盘才是存储文件系统的硬盘</span></span><br><span class="line">				dev_no++;</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="class"><span class="keyword">struct</span> <span class="title">disk</span> *<span class="title">hd</span> = &amp;<span class="title">channels</span>[<span class="title">channel_no</span>].<span class="title">devices</span>[<span class="title">dev_no</span>];</span></span><br><span class="line">			<span class="class"><span class="keyword">struct</span> <span class="title">partition</span> *<span class="title">part</span> = <span class="title">hd</span>-&gt;<span class="title">prim_parts</span>;</span></span><br><span class="line">			<span class="keyword">while</span> (part_idx &lt; <span class="number">12</span>)</span><br><span class="line">			&#123;</span><br><span class="line">                 <span class="comment">// 4个主分区+8个逻辑</span></span><br><span class="line">				<span class="keyword">if</span> (part_idx == <span class="number">4</span>)</span><br><span class="line">				&#123; <span class="comment">// 开始处理逻辑分区</span></span><br><span class="line">					part = hd-&gt;logic_parts;</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">				<span class="keyword">if</span> (part-&gt;sec_cnt != <span class="number">0</span>)</span><br><span class="line">				&#123; </span><br><span class="line">                    <span class="comment">// 如果分区存在</span></span><br><span class="line">					<span class="built_in">memset</span>(sb_buf, <span class="number">0</span>, SECTOR_SIZE);</span><br><span class="line"></span><br><span class="line">					<span class="comment">/* 读出分区的超级块,根据魔数是否正确来判断是否存在文件系统 */</span></span><br><span class="line">					ide_read(hd, part-&gt;start_lba + <span class="number">1</span>, sb_buf, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">					<span class="keyword">if</span> (sb_buf-&gt;magic == <span class="number">0x19971234</span>)</span><br><span class="line">					&#123;</span><br><span class="line">						printk(<span class="string">"%s has filesystem\n"</span>, part-&gt;name);</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">else</span></span><br><span class="line">					&#123; </span><br><span class="line">                        <span class="comment">// 其它文件系统不支持,一律按无文件系统处理</span></span><br><span class="line">						printk(<span class="string">"formatting %s`s partition %s......\n"</span>, hd-&gt;name, part-&gt;name);</span><br><span class="line">						partition_format(part);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				part_idx++;</span><br><span class="line">				part++; <span class="comment">// 下一分区</span></span><br><span class="line">			&#125;</span><br><span class="line">			dev_no++; <span class="comment">// 下一磁盘</span></span><br><span class="line">		&#125;</span><br><span class="line">		channel_no++; <span class="comment">// 下一通道</span></span><br><span class="line">	&#125;</span><br><span class="line">	sys_free(sb_buf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180512/CKCDFCB5J5.png?imageslim" alt="mark"></p>
+<p>在成功创建出文件系统之后，输入了该文件系统中四个主分区的起始扇区地址和该分区的扇区总数。</p>
+<p>有了文件系统之后，我们就能对磁盘上的数据进行有效的管理，接下来就要实现文件的创建与删除操作。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/10/cdecl/" rel="next" title="六. 函数调用约定与系统调用">
+                <i class="fa fa-chevron-left"></i> 六. 函数调用约定与系统调用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/13/filesystem3/" rel="prev" title="十七. 文件系统三(文件的创建)">
+                十七. 文件系统三(文件的创建) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

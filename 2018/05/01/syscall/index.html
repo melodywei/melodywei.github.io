@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="系统调用简介关于系统调用前面有过简单的介绍，这里将真正实现系统调用 现代的操作系统中，用户的权限是有限的，它不能随意的访问系统中的资源。操作系统屏蔽了用户直接访问硬件的能力，这样做的原因主要是为了安全考虑。 但是如果我们想控制显卡打印字符怎么呢，那就需要通过操作系统提供的接口来完成了，我们调用操作系统提供的接口，然后操作系统去操控硬件，比如说这里的显卡，打印出字符来。我们使用的c语言里面的prin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="十三. 实现系统调用">
+<meta property="og:url" content="http://yoursite.com/2018/05/01/syscall/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="系统调用简介关于系统调用前面有过简单的介绍，这里将真正实现系统调用 现代的操作系统中，用户的权限是有限的，它不能随意的访问系统中的资源。操作系统屏蔽了用户直接访问硬件的能力，这样做的原因主要是为了安全考虑。 但是如果我们想控制显卡打印字符怎么呢，那就需要通过操作系统提供的接口来完成了，我们调用操作系统提供的接口，然后操作系统去操控硬件，比如说这里的显卡，打印出字符来。我们使用的c语言里面的prin">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180501/g6e71hdJGe.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180501/b9C6K5bD68.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180501/HD5g3e2gLc.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180501/KkeGm92JFi.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180501/CGaeH7HLGd.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180501/BA161ACaJA.png?imageslim">
+<meta property="og:updated_time" content="2018-05-01T10:18:02.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="十三. 实现系统调用">
+<meta name="twitter:description" content="系统调用简介关于系统调用前面有过简单的介绍，这里将真正实现系统调用 现代的操作系统中，用户的权限是有限的，它不能随意的访问系统中的资源。操作系统屏蔽了用户直接访问硬件的能力，这样做的原因主要是为了安全考虑。 但是如果我们想控制显卡打印字符怎么呢，那就需要通过操作系统提供的接口来完成了，我们调用操作系统提供的接口，然后操作系统去操控硬件，比如说这里的显卡，打印出字符来。我们使用的c语言里面的prin">
+<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180501/g6e71hdJGe.png?imageslim">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/01/syscall/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>十三. 实现系统调用 | melodyのblog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/01/syscall/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">十三. 实现系统调用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-05-01 18:18:02" itemprop="dateCreated datePublished" datetime="2018-05-01T18:18:02+08:00">2018-05-01</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="系统调用简介"><a href="#系统调用简介" class="headerlink" title="系统调用简介"></a>系统调用简介</h1><p>关于系统调用前面有过简单的介绍，这里将真正实现系统调用</p>
+<p>现代的操作系统中，用户的权限是有限的，它不能随意的访问系统中的资源。操作系统屏蔽了用户直接访问硬件的能力，这样做的原因主要是为了安全考虑。</p>
+<p>但是如果我们想控制显卡打印字符怎么呢，那就需要通过操作系统提供的接口来完成了，我们调用操作系统提供的接口，然后操作系统去操控硬件，比如说这里的显卡，打印出字符来。我们使用的c语言里面的printf函数，其真实调用的是系统调用接口中的write，操作系统提供的这一系列接口就是系统调用接口。</p>
+<p>总结来说，系统调用就是用户进程申请操作系统的帮助，让操作系统帮其完成某项工作，也就相当于用户进程调用了操作系统的功能。</p>
+<h1 id="系统调用的实现原理"><a href="#系统调用的实现原理" class="headerlink" title="系统调用的实现原理"></a>系统调用的实现原理</h1><p>系统调用主要是通过中断门实现的，通过软中断int发出中断信号。由于要支持的系统功能很多，不可能每个系统调用就占用一个中断向量。所以规定了0x80为系统调用的中断向量号，在进行系统调用之前，向eax中写入系统调用的子功能号，再进行系统调用的时候，系统就会根据eax的值来决定调用哪个中断处理例程。</p>
+<h1 id="linux中系统调用的实现"><a href="#linux中系统调用的实现" class="headerlink" title="linux中系统调用的实现"></a>linux中系统调用的实现</h1><p>在完善我们的系统调用之前，先看看linux中是如何实现系统调用的。</p>
+<p>通过man syscall查看系统调用的文档</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180501/g6e71hdJGe.png?imageslim" alt="linux syscall"></p>
+<p>这里面可以看到他的原型是</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">syscall</span><span class="params">(<span class="keyword">long</span> number, ...)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>该函数接收一个系统调用号，由于不同的子功能所需的参数都是不同的，所以该函数需要支持可变参数。</p>
+<p>这里可以看一个例子</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180501/b9C6K5bD68.png?imageslim" alt="mark"></p>
+<p>这里调用了系统调用SYS_gettid，这个SYS_gettid定义在</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180501/HD5g3e2gLc.png?imageslim" alt="mark"></p>
+<p>继续向后找，可以看到最终的定义就是一个数值，也就是SYS_gettid的子功能号。</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180501/KkeGm92JFi.png?imageslim" alt="mark"></p>
+<p>syscall其实是一个间接的系统调用，它是一个库函数，不是操作系统直接提供的。</p>
+<p>linux中也有直接提供的系统调用，就是_syscall。</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180501/CGaeH7HLGd.png?imageslim" alt="_syscall"></p>
+<p>这种系统调用方式是通过宏机制来实现的，参数个数不同就对应不同的宏，但是最大支持的参数只有6个，而且会引发安全问题，所以它已经被废弃了。</p>
+<p>而我们的kernel就打算用这种方式来实现系统调用，因为相对来说简单</p>
+<h1 id="实现系统调用"><a href="#实现系统调用" class="headerlink" title="实现系统调用"></a>实现系统调用</h1><p>实现系统调用的流程如下</p>
+<ol>
+<li>用中断门实现系统调用，通过0x80中断作为系统调用的入口</li>
+<li>在IDT中安装0x80号中断对应的描述符，在该描述符中注册系统调用对应的中断处理例程</li>
+<li>建立系统调用子功能表，利用eax寄存器中的子功能号在该表中索引相应的处理函数</li>
+<li>用宏实现用户空间系统调用接口_syscall，最大只支持3个参数，ebx保存第一个参数，ecx保存第二个参数，edx保存第三个参数</li>
+</ol>
+<p>就按照这个步骤一步步完成代码</p>
+<p>在idt中添加0x80的描述符，该描述符必须要在3特权级下能够访问，否则用户就无法调用系统调用接口了</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">extern</span> uint32_t <span class="title">syscall_handler</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">idt_desc_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> lastindex = IDT_DESC_CNT - <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; IDT_DESC_CNT - <span class="number">1</span>; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		make_idt_desc(&amp;idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	make_idt_desc(&amp;idt[lastindex], IDT_DESC_ATTR_DPL3, syscall_handler);</span><br><span class="line"></span><br><span class="line">	put_str(<span class="string">"   idt_desc_init done\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>系统调用宏的实现</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 无参数的系统调用 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _syscall0(NUMBER)  \</span></span><br><span class="line">(&#123;                         \</span><br><span class="line">        <span class="keyword">int</span> retval;        \</span><br><span class="line">        <span class="keyword">asm</span> <span class="keyword">volatile</span>(      \</span><br><span class="line">            <span class="string">"int $0x80"</span>    \</span><br><span class="line">            : <span class="string">"=a"</span>(retval) \</span><br><span class="line">            : <span class="string">"a"</span>(NUMBER)  \</span><br><span class="line">            : <span class="string">"memory"</span>);   \</span><br><span class="line">        retval;            \</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 一个参数的系统调用 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _syscall1(NUMBER, ARG1)      \</span></span><br><span class="line">    (&#123;                               \</span><br><span class="line">        <span class="keyword">int</span> retval;                  \</span><br><span class="line">        <span class="keyword">asm</span> <span class="keyword">volatile</span>(                \</span><br><span class="line">            <span class="string">"int $0x80"</span>              \</span><br><span class="line">            : <span class="string">"=a"</span>(retval)           \</span><br><span class="line">            : <span class="string">"a"</span>(NUMBER), <span class="string">"b"</span>(ARG1) \</span><br><span class="line">            : <span class="string">"memory"</span>);             \</span><br><span class="line">        retval;                      \</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 两个参数的系统调用 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _syscall2(NUMBER, ARG1, ARG2) (&#123;    \</span></span><br><span class="line">    <span class="keyword">int</span> retval;                             \</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(                           \</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="string">"int $0x80"</span>                         \</span></span></span><br><span class="line"><span class="function"><span class="params">        : <span class="string">"=a"</span>(retval)                      \</span></span></span><br><span class="line"><span class="function"><span class="params">        : <span class="string">"a"</span>(NUMBER), <span class="string">"b"</span>(ARG1), <span class="string">"c"</span>(ARG2) \</span></span></span><br><span class="line"><span class="function"><span class="params">        : <span class="string">"memory"</span>)</span></span>;                        \</span><br><span class="line">    retval;                                 \</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 三个参数的系统调用 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _syscall3(NUMBER, ARG1, ARG2, ARG3) (&#123;         \</span></span><br><span class="line">    <span class="keyword">int</span> retval;                                        \</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(                                      \</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="string">"int $0x80"</span>                                    \</span></span></span><br><span class="line"><span class="function"><span class="params">        : <span class="string">"=a"</span>(retval)                                 \</span></span></span><br><span class="line"><span class="function"><span class="params">        : <span class="string">"a"</span>(NUMBER), <span class="string">"b"</span>(ARG1), <span class="string">"c"</span>(ARG2), <span class="string">"d"</span>(ARG3) \</span></span></span><br><span class="line"><span class="function"><span class="params">        : <span class="string">"memory"</span>)</span></span>;                                   \</span><br><span class="line">    retval;                                            \</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>完成0x80的处理例程</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">bits</span> <span class="number">32</span>]</span><br><span class="line"><span class="meta">extern</span> syscall_table</span><br><span class="line"><span class="meta">section</span> .text</span><br><span class="line"><span class="meta">global</span> syscall_handler</span><br><span class="line"><span class="symbol">syscall_handler:</span></span><br><span class="line">    <span class="comment">; 保存上下文环境</span></span><br><span class="line">    <span class="keyword">push</span> <span class="number">0</span></span><br><span class="line">    <span class="keyword">push</span> <span class="built_in">ds</span></span><br><span class="line">    <span class="keyword">push</span> <span class="built_in">es</span></span><br><span class="line">    <span class="keyword">push</span> <span class="built_in">fs</span></span><br><span class="line">    <span class="keyword">push</span> <span class="built_in">gs</span></span><br><span class="line">    <span class="keyword">pushad</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">push</span> <span class="number">0x80</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">push</span> <span class="built_in">edx</span></span><br><span class="line">    <span class="keyword">push</span> <span class="built_in">ecx</span></span><br><span class="line">    <span class="keyword">push</span> <span class="built_in">ebx</span></span><br><span class="line"></span><br><span class="line">    // 调用相应的处理程序</span><br><span class="line">    <span class="keyword">call</span> [syscall_table + <span class="number">4</span> * <span class="built_in">eax</span>]</span><br><span class="line">    <span class="keyword">add</span> <span class="built_in">esp</span>, <span class="number">12</span> <span class="comment">; 跨过上面的三个参数</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">; 将 call 调用后的返回值存入当前内核栈中 eax 的位置</span></span><br><span class="line">    <span class="keyword">mov</span> [<span class="built_in">esp</span> + <span class="number">4</span> * <span class="number">8</span>], <span class="built_in">eax</span></span><br><span class="line">    <span class="keyword">jmp</span> intr_exit</span><br></pre></td></tr></table></figure>
+<p>初始化系统调用子功能对应的处理程序</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> syscall_nr 32</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">void</span> *syscall;</span><br><span class="line">syscall syscall_table[syscall_nr];</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 返回当前任务的pid */</span></span><br><span class="line"><span class="keyword">uint32_t</span> sys_getpid(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> running_thread()-&gt;pid;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 初始化系统调用 */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">syscall_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    put_str(<span class="string">"syscall_init start\n"</span>);</span><br><span class="line">    syscall_table[SYS_GETPID] = sys_getpid;</span><br><span class="line">    put_str(<span class="string">"syscall_init done\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>提供用户使用的系统调用接口</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 返回当前任务pid */</span></span><br><span class="line"><span class="keyword">uint32_t</span> getpid()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> _syscall0(SYS_GETPID);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当前就有了一个getpid的系统调用接口</p>
+<h1 id="系统调用write以及printf函数的实现"><a href="#系统调用write以及printf函数的实现" class="headerlink" title="系统调用write以及printf函数的实现"></a>系统调用write以及printf函数的实现</h1><p>目前这个write只是一个简易版，它的主要功能是为printf函数提供支持。哈哈，终于要实现自己的printf函数了。有了前面的基础，再添加一个系统调用就很简单了。</p>
+<p>添加SYS_WRITE的处理程序</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint32_t</span> sys_write(<span class="keyword">char</span> *str)</span><br><span class="line">&#123;</span><br><span class="line">    console_put_str(str);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">strlen</span>(str);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 初始化系统调用 */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">syscall_init</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    put_str(<span class="string">"syscall_init start\n"</span>);</span><br><span class="line">    syscall_table[SYS_GETPID] = sys_getpid;</span><br><span class="line">    syscall_table[SYS_WRITE] = sys_write;</span><br><span class="line">    put_str(<span class="string">"syscall_init done\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>提供用户调用接口</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint32_t</span> write(<span class="keyword">char</span> *str)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> _syscall1(SYS_WRITE, str);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="可变参数的原理"><a href="#可变参数的原理" class="headerlink" title="可变参数的原理"></a>可变参数的原理</h2><p>我们平时使用的函数中，大多数参数的个数都是已知的。函数占用的是静态内存，也就是说再编译期就要确定为其分配多大的空间。这个空间的大小在函数声明的时候就已经确定了。比如</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">func</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">char</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>编译器会自动的根据函数参数的类型在栈中分配好空间。那么问题来了，对于这种参数确定的函数，编译器能够知道为其分配多少空间。那么在参数可变的情况下，编译器有是如何为其分配空间的呢</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">printf</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>printf函数的原型如上，通常我们是这样调用它的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">"aaa%s %c"</span>, str, ch);</span><br></pre></td></tr></table></figure>
+<p>从这种调用方式来看，虽然说他的参数是可变的，同样也可以说他的参数是固定的。因为在调用它的时候这个format是固定的，format就是指 <strong>aaa%s %c</strong>这段内容，每一个 <strong>%</strong> 后面就带表需要一个参数，这里就固定了它有两个参数。每个 <strong>%</strong> 便是在栈中寻找可变参数的依据。</p>
+<p>gcc对于可变参数的支持是通过 <strong>va_start, va_end, va_arg</strong> 这三个宏来实现的。</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180501/BA161ACaJA.png?imageslim" alt="可变参数原理"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个宏的作用相当于初始化ap指针，使其执行v的地址</span></span><br><span class="line">va_start(ap,v) </span><br><span class="line"></span><br><span class="line"><span class="comment">//ap是指向可变参数指针变量，t是可变参数的类型，该函数的作用是使ap指向栈中下一个参数的地址并返回其值 </span></span><br><span class="line">va_arg(ap,t)</span><br><span class="line"></span><br><span class="line"><span class="comment">//清空ap</span></span><br><span class="line">va_end(ap)</span><br></pre></td></tr></table></figure>
+<p>我们通过对printf函数中format的解析，每找到一个 <strong>%</strong> 通过 <strong>%</strong> 后面接的字符来判断参数的类型，知道该参数的类型之后，就可以调用va_arg找到该参数在栈中的地址，也就可以顺利的实现printf了。下面看一下具体的解析format的过程</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 将参数ap按照格式format输出到字符串str,并返回替换后str长度 */</span></span><br><span class="line"><span class="keyword">uint32_t</span> <span class="built_in">vsprintf</span>(<span class="keyword">char</span> *str, <span class="keyword">const</span> <span class="keyword">char</span> *format, va_list ap)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">char</span> *buf_ptr = str;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *index_ptr = format;</span><br><span class="line">    <span class="keyword">char</span> index_char = *index_ptr;</span><br><span class="line">    <span class="keyword">int32_t</span> arg_int;</span><br><span class="line">    <span class="keyword">char</span> *arg_str;</span><br><span class="line">    <span class="keyword">while</span> (index_char)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (index_char != <span class="string">'%'</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            *(buf_ptr++) = index_char;</span><br><span class="line">            index_char = *(++index_ptr);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        index_char = *(++index_ptr); <span class="comment">// 得到%后面的字符</span></span><br><span class="line">        <span class="keyword">switch</span> (index_char)</span><br><span class="line">        &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">'s'</span>:</span><br><span class="line">            arg_str = va_arg(ap, <span class="keyword">char</span> *);</span><br><span class="line">            <span class="built_in">strcpy</span>(buf_ptr, arg_str);</span><br><span class="line">            buf_ptr += <span class="built_in">strlen</span>(arg_str);</span><br><span class="line">            index_char = *(++index_ptr);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="string">'c'</span>:</span><br><span class="line">            *(buf_ptr++) = va_arg(ap, <span class="keyword">char</span>);</span><br><span class="line">            index_char = *(++index_ptr);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="string">'d'</span>:</span><br><span class="line">            arg_int = va_arg(ap, <span class="keyword">int</span>);</span><br><span class="line">            <span class="comment">/* 若是负数, 将其转为正数后,再正数前面输出个负号'-'. */</span></span><br><span class="line">            <span class="keyword">if</span> (arg_int &lt; <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                arg_int = <span class="number">0</span> - arg_int;</span><br><span class="line">                *buf_ptr++ = <span class="string">'-'</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            itoa(arg_int, &amp;buf_ptr, <span class="number">10</span>);</span><br><span class="line">            index_char = *(++index_ptr);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="string">'x'</span>:</span><br><span class="line">            arg_int = va_arg(ap, <span class="keyword">int</span>);</span><br><span class="line">            itoa(arg_int, &amp;buf_ptr, <span class="number">16</span>);</span><br><span class="line">            index_char = *(++index_ptr); <span class="comment">// 跳过格式字符并更新index_char</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">strlen</span>(str);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数的作用就是对format进行解析，这里只处理了 % 后面接单个字符的情况，总共解析了字符串，字符，整数，16进制整数这些类型。</p>
+<p>解析的过程其实就是将原先%x替换成栈中的数据。</p>
+<p>比如<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *str = <span class="string">"bbb"</span>;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"aaa %s"</span>, str);</span><br></pre></td></tr></table></figure></p>
+<p>在找到%s后，知道了参数的类型为char*，就调用va_arg得到该参数在栈中的地址，然后将%s替换成栈中的数据。</p>
+<p>这三个宏的实现如下。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">char</span>* va_list;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> va_start(ap, v) ap = (va_list)&amp;v <span class="comment">// 把ap指向第一个固定参数v</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> va_arg(ap, t) *((t *)(ap += 4))  <span class="comment">// ap指向下一个参数并返回其值</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> va_end(ap) ap = NULL             <span class="comment">// 清除ap</span></span></span><br></pre></td></tr></table></figure></p>
+<p>解析完了之后就可以直接通过printf函数调用输出了，顺带也罢sprintf实现了</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 同printf不同的地方就是字符串不是写到终端,而是写到buf中 */</span></span><br><span class="line"><span class="keyword">uint32_t</span> <span class="built_in">sprintf</span>(<span class="keyword">char</span> *buf, <span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span><br><span class="line">&#123;</span><br><span class="line">    va_list args;</span><br><span class="line">    <span class="keyword">uint32_t</span> retval;</span><br><span class="line">    va_start(args, format);</span><br><span class="line">    retval = <span class="built_in">vsprintf</span>(buf, format, args);</span><br><span class="line">    va_end(args);</span><br><span class="line">    <span class="keyword">return</span> retval;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 格式化输出字符串format */</span></span><br><span class="line"><span class="keyword">uint32_t</span> <span class="built_in">printf</span>(<span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span><br><span class="line">&#123;</span><br><span class="line">    va_list args;</span><br><span class="line">    va_start(args, format); <span class="comment">// 使args指向format</span></span><br><span class="line">    <span class="keyword">char</span> buf[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;;   <span class="comment">// 用于存储拼接后的字符串</span></span><br><span class="line">    <span class="built_in">vsprintf</span>(buf, format, args);</span><br><span class="line">    va_end(args);</span><br><span class="line">    <span class="keyword">return</span> write(buf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到printf函数确实是通过系统调用write实现的。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/30/process/" rel="next" title="十二. 实现用户进程">
+                <i class="fa fa-chevron-left"></i> 十二. 实现用户进程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/07/malloc&free/" rel="prev" title="十四. malloc&free的实现">
+                十四. malloc&free的实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#系统调用简介"><span class="nav-number">1.</span> <span class="nav-text">系统调用简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#系统调用的实现原理"><span class="nav-number">2.</span> <span class="nav-text">系统调用的实现原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#linux中系统调用的实现"><span class="nav-number">3.</span> <span class="nav-text">linux中系统调用的实现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实现系统调用"><span class="nav-number">4.</span> <span class="nav-text">实现系统调用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#系统调用write以及printf函数的实现"><span class="nav-number">5.</span> <span class="nav-text">系统调用write以及printf函数的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#可变参数的原理"><span class="nav-number">5.1.</span> <span class="nav-text">可变参数的原理</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

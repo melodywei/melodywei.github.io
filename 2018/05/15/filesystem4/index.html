@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="写入文件文件的数据都是记录在inode中的文件块中，在该文件系统的设计中，只用了12个直接块和一个间接块来存储文件，所以一个文件最大可以存放 140 * 512字节的数据。 写文件的过程对文件块和扇区的分配过程，根据当前要写入的数据量大小，来判断是否需要分配新的数据块。如果12个直接块不够存储该数据，就分配间接块来存储，当所需的数据块分配好了之后，就会逐块的往硬盘上写入数据，知道所有的数据被写入硬">
+<meta property="og:type" content="article">
+<meta property="og:title" content="十八. 文件系统四(文件的读写与删除)">
+<meta property="og:url" content="http://yoursite.com/2018/05/15/filesystem4/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="写入文件文件的数据都是记录在inode中的文件块中，在该文件系统的设计中，只用了12个直接块和一个间接块来存储文件，所以一个文件最大可以存放 140 * 512字节的数据。 写文件的过程对文件块和扇区的分配过程，根据当前要写入的数据量大小，来判断是否需要分配新的数据块。如果12个直接块不够存储该数据，就分配间接块来存储，当所需的数据块分配好了之后，就会逐块的往硬盘上写入数据，知道所有的数据被写入硬">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180514/em5hc8lG8k.png?imageslim">
+<meta property="og:updated_time" content="2018-05-15T04:37:36.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="十八. 文件系统四(文件的读写与删除)">
+<meta name="twitter:description" content="写入文件文件的数据都是记录在inode中的文件块中，在该文件系统的设计中，只用了12个直接块和一个间接块来存储文件，所以一个文件最大可以存放 140 * 512字节的数据。 写文件的过程对文件块和扇区的分配过程，根据当前要写入的数据量大小，来判断是否需要分配新的数据块。如果12个直接块不够存储该数据，就分配间接块来存储，当所需的数据块分配好了之后，就会逐块的往硬盘上写入数据，知道所有的数据被写入硬">
+<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180514/em5hc8lG8k.png?imageslim">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/15/filesystem4/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>十八. 文件系统四(文件的读写与删除) | melodyのblog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/15/filesystem4/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">十八. 文件系统四(文件的读写与删除)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-05-15 12:37:36" itemprop="dateCreated datePublished" datetime="2018-05-15T12:37:36+08:00">2018-05-15</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="写入文件"><a href="#写入文件" class="headerlink" title="写入文件"></a>写入文件</h1><p>文件的数据都是记录在inode中的文件块中，在该文件系统的设计中，只用了12个直接块和一个间接块来存储文件，所以一个文件最大可以存放 140 * 512字节的数据。</p>
+<p>写文件的过程对文件块和扇区的分配过程，根据当前要写入的数据量大小，来判断是否需要分配新的数据块。如果12个直接块不够存储该数据，就分配间接块来存储，当所需的数据块分配好了之后，就会逐块的往硬盘上写入数据，知道所有的数据被写入硬盘，最后返回写入的字节数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 把buf中的count个字节写入file,成功则返回写入的字节数,失败则返回-1 */</span></span><br><span class="line"><span class="keyword">int32_t</span> file_write(struct file *file, <span class="keyword">const</span> <span class="keyword">void</span> *buf, <span class="keyword">uint32_t</span> count)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> ((file-&gt;fd_inode-&gt;i_size + count) &gt; (BLOCK_SIZE * <span class="number">140</span>))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 文件目前最大只支持512*140=71680字节</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">uint8_t</span> *io_buf = sys_malloc(BLOCK_SIZE);</span><br><span class="line">    <span class="keyword">if</span> (io_buf == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">uint32_t</span> *all_blocks = (<span class="keyword">uint32_t</span> *)sys_malloc(BLOCK_SIZE + <span class="number">48</span>); <span class="comment">// 用来记录文件所有的块地址</span></span><br><span class="line">    <span class="keyword">if</span> (all_blocks == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        printk(<span class="string">"file_write: sys_malloc for all_blocks failed\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">uint8_t</span> *src = buf;      <span class="comment">// 用src指向buf中待写入的数据</span></span><br><span class="line">    <span class="keyword">uint32_t</span> bytes_written = <span class="number">0</span>;    <span class="comment">// 用来记录已写入数据大小</span></span><br><span class="line">    <span class="keyword">uint32_t</span> size_left = count;    <span class="comment">// 用来记录未写入数据大小</span></span><br><span class="line">    <span class="keyword">int32_t</span> block_lba = <span class="number">-1</span>;        <span class="comment">// 块地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> block_bitmap_idx = <span class="number">0</span>; <span class="comment">// 用来记录block对应于block_bitmap中的索引,做为参数传给bitmap_sync</span></span><br><span class="line">    <span class="keyword">uint32_t</span> sec_idx;              <span class="comment">// 用来索引扇区</span></span><br><span class="line">    <span class="keyword">uint32_t</span> sec_lba;              <span class="comment">// 扇区地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> sec_off_bytes;        <span class="comment">// 扇区内字节偏移量</span></span><br><span class="line">    <span class="keyword">uint32_t</span> sec_left_bytes;       <span class="comment">// 扇区内剩余字节量</span></span><br><span class="line">    <span class="keyword">uint32_t</span> chunk_size;           <span class="comment">// 每次写入硬盘的数据块大小</span></span><br><span class="line">    <span class="keyword">int32_t</span> indirect_block_table;  <span class="comment">// 用来获取一级间接表地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> block_idx;            <span class="comment">// 块索引</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 判断文件是否是第一次写,如果是,先为其分配一个块 */</span></span><br><span class="line">    <span class="keyword">if</span> (file-&gt;fd_inode-&gt;i_sectors[<span class="number">0</span>] == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        block_lba = block_bitmap_alloc(cur_part);</span><br><span class="line">        <span class="keyword">if</span> (block_lba == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        file-&gt;fd_inode-&gt;i_sectors[<span class="number">0</span>] = block_lba;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 每分配一个块就将位图同步到硬盘 */</span></span><br><span class="line">        block_bitmap_idx = block_lba - cur_part-&gt;sb-&gt;data_start_lba;</span><br><span class="line">        ASSERT(block_bitmap_idx != <span class="number">0</span>);</span><br><span class="line">        bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 写入count个字节前,该文件已经占用的块数 */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> file_has_used_blocks = file-&gt;fd_inode-&gt;i_size / BLOCK_SIZE + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 存储count字节后该文件将占用的块数 */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> file_will_use_blocks = (file-&gt;fd_inode-&gt;i_size + count) / BLOCK_SIZE + <span class="number">1</span>;</span><br><span class="line">    ASSERT(file_will_use_blocks &lt;= <span class="number">140</span>);</span><br><span class="line">    <span class="comment">/* 通过此增量判断是否需要分配扇区,如增量为0,表示原扇区够用 */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> add_blocks = file_will_use_blocks - file_has_used_blocks;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 开始将文件所有块地址收集到all_blocks,(系统中块大小等于扇区大小)</span></span><br><span class="line"><span class="comment">     * 后面都统一在all_blocks中获取写入扇区地址 */</span></span><br><span class="line">    <span class="keyword">if</span> (add_blocks == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">/* 在同一扇区内写入数据,不涉及到分配新扇区 */</span></span><br><span class="line">        <span class="keyword">if</span> (file_has_used_blocks &lt;= <span class="number">12</span>)</span><br><span class="line">        &#123;                                         <span class="comment">// 文件数据量将在12块之内</span></span><br><span class="line">            block_idx = file_has_used_blocks - <span class="number">1</span>; <span class="comment">// 指向最后一个已有数据的扇区</span></span><br><span class="line">            all_blocks[block_idx] = file-&gt;fd_inode-&gt;i_sectors[block_idx];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">/* 未写入新数据之前已经占用了间接块,需要将间接块地址读进来 */</span></span><br><span class="line">            ASSERT(file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>] != <span class="number">0</span>);</span><br><span class="line">            indirect_block_table = file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>];</span><br><span class="line">            ide_read(cur_part-&gt;my_disk, indirect_block_table, all_blocks + <span class="number">12</span>, <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">/* 若有增量,便涉及到分配新扇区及是否分配一级间接块表,下面要分三种情况处理 */</span></span><br><span class="line">        <span class="comment">/* 第一种情况:12个直接块够用*/</span></span><br><span class="line">        <span class="keyword">if</span> (file_will_use_blocks &lt;= <span class="number">12</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">/* 先将有剩余空间的可继续用的扇区地址写入all_blocks */</span></span><br><span class="line">            block_idx = file_has_used_blocks - <span class="number">1</span>;</span><br><span class="line">            ASSERT(file-&gt;fd_inode-&gt;i_sectors[block_idx] != <span class="number">0</span>);</span><br><span class="line">            all_blocks[block_idx] = file-&gt;fd_inode-&gt;i_sectors[block_idx];</span><br><span class="line"></span><br><span class="line">            <span class="comment">/* 再将未来要用的扇区分配好后写入all_blocks */</span></span><br><span class="line">            block_idx = file_has_used_blocks; <span class="comment">// 指向第一个要分配的新扇区</span></span><br><span class="line">            <span class="keyword">while</span> (block_idx &lt; file_will_use_blocks)</span><br><span class="line">            &#123;</span><br><span class="line">                block_lba = block_bitmap_alloc(cur_part);</span><br><span class="line">                <span class="keyword">if</span> (block_lba == <span class="number">-1</span>)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">/* 写文件时,不应该存在块未使用但已经分配扇区的情况,当文件删除时,就会把块地址清0 */</span></span><br><span class="line">                ASSERT(file-&gt;fd_inode-&gt;i_sectors[block_idx] == <span class="number">0</span>); <span class="comment">// 确保尚未分配扇区地址</span></span><br><span class="line">                file-&gt;fd_inode-&gt;i_sectors[block_idx] = all_blocks[block_idx] = block_lba;</span><br><span class="line"></span><br><span class="line">                <span class="comment">/* 每分配一个块就将位图同步到硬盘 */</span></span><br><span class="line">                block_bitmap_idx = block_lba - cur_part-&gt;sb-&gt;data_start_lba;</span><br><span class="line">                bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);</span><br><span class="line"></span><br><span class="line">                block_idx++; <span class="comment">// 下一个分配的新扇区</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (file_has_used_blocks &lt;= <span class="number">12</span> &amp;&amp; file_will_use_blocks &gt; <span class="number">12</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">/* 第二种情况: 旧数据在12个直接块内,新数据将使用间接块*/</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">/* 先将有剩余空间的可继续用的扇区地址收集到all_blocks */</span></span><br><span class="line">            block_idx = file_has_used_blocks - <span class="number">1</span>; <span class="comment">// 指向旧数据所在的最后一个扇区</span></span><br><span class="line">            all_blocks[block_idx] = file-&gt;fd_inode-&gt;i_sectors[block_idx];</span><br><span class="line">            <span class="comment">/* 创建一级间接块表 */</span></span><br><span class="line">            block_lba = block_bitmap_alloc(cur_part);</span><br><span class="line">            <span class="keyword">if</span> (block_lba == <span class="number">-1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            ASSERT(file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>] == <span class="number">0</span>); <span class="comment">// 确保一级间接块表未分配</span></span><br><span class="line">            <span class="comment">/* 分配一级间接块索引表 */</span></span><br><span class="line">            indirect_block_table = file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>] = block_lba;</span><br><span class="line"></span><br><span class="line">            block_idx = file_has_used_blocks; <span class="comment">// 第一个未使用的块,即本文件最后一个已经使用的直接块的下一块</span></span><br><span class="line">            <span class="keyword">while</span> (block_idx &lt; file_will_use_blocks)</span><br><span class="line">            &#123;</span><br><span class="line">                block_lba = block_bitmap_alloc(cur_part);</span><br><span class="line">                <span class="keyword">if</span> (block_lba == <span class="number">-1</span>)</span><br><span class="line">                &#123;</span><br><span class="line">                    printk(<span class="string">"file_write: block_bitmap_alloc for situation 2 failed\n"</span>);</span><br><span class="line">                    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (block_idx &lt; <span class="number">12</span>)</span><br><span class="line">                &#123;  </span><br><span class="line">                    <span class="comment">// 新创建的0~11块直接存入all_blocks数组</span></span><br><span class="line">                    ASSERT(file-&gt;fd_inode-&gt;i_sectors[block_idx] == <span class="number">0</span>); <span class="comment">// 确保尚未分配扇区地址</span></span><br><span class="line">                    file-&gt;fd_inode-&gt;i_sectors[block_idx] = all_blocks[block_idx] = block_lba;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                &#123; </span><br><span class="line">                    <span class="comment">// 间接块只写入到all_block数组中,待全部分配完成后一次性同步到硬盘</span></span><br><span class="line">                    all_blocks[block_idx] = block_lba;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">/* 每分配一个块就将位图同步到硬盘 */</span></span><br><span class="line">                block_bitmap_idx = block_lba - cur_part-&gt;sb-&gt;data_start_lba;</span><br><span class="line">                bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);</span><br><span class="line"></span><br><span class="line">                block_idx++; <span class="comment">// 下一个新扇区</span></span><br><span class="line">            &#125;</span><br><span class="line">            ide_write(cur_part-&gt;my_disk, indirect_block_table, all_blocks + <span class="number">12</span>, <span class="number">1</span>); <span class="comment">// 同步一级间接块表到硬盘</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (file_has_used_blocks &gt; <span class="number">12</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">/* 第三种情况:新数据占据间接块*/</span></span><br><span class="line">            ASSERT(file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>] != <span class="number">0</span>);           <span class="comment">// 已经具备了一级间接块表</span></span><br><span class="line">            indirect_block_table = file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>]; <span class="comment">// 获取一级间接表地址</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">/* 已使用的间接块也将被读入all_blocks,无须单独收录 */</span></span><br><span class="line">            ide_read(cur_part-&gt;my_disk, indirect_block_table, all_blocks + <span class="number">12</span>, <span class="number">1</span>); <span class="comment">// 获取所有间接块地址</span></span><br><span class="line"></span><br><span class="line">            block_idx = file_has_used_blocks; <span class="comment">// 第一个未使用的间接块,即已经使用的间接块的下一块</span></span><br><span class="line">            <span class="keyword">while</span> (block_idx &lt; file_will_use_blocks)</span><br><span class="line">            &#123;</span><br><span class="line">                block_lba = block_bitmap_alloc(cur_part);</span><br><span class="line">                <span class="keyword">if</span> (block_lba == <span class="number">-1</span>)</span><br><span class="line">                &#123;</span><br><span class="line">                    printk(<span class="string">"file_write: block_bitmap_alloc for situation 3 failed\n"</span>);</span><br><span class="line">                    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                all_blocks[block_idx++] = block_lba;</span><br><span class="line">                <span class="comment">/* 每分配一个块就将位图同步到硬盘 */</span></span><br><span class="line">                block_bitmap_idx = block_lba - cur_part-&gt;sb-&gt;data_start_lba;</span><br><span class="line">                bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);</span><br><span class="line">            &#125;</span><br><span class="line">            ide_write(cur_part-&gt;my_disk, indirect_block_table, all_blocks + <span class="number">12</span>, <span class="number">1</span>); <span class="comment">// 同步一级间接块表到硬盘</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">bool</span> first_write_block = <span class="literal">true</span>; <span class="comment">// 含有剩余空间的扇区标识</span></span><br><span class="line">    <span class="comment">/* 块地址已经收集到all_blocks中,下面开始写数据 */</span></span><br><span class="line">    file-&gt;fd_pos = file-&gt;fd_inode-&gt;i_size - <span class="number">1</span>; <span class="comment">// 置fd_pos为文件大小-1,下面在写数据时随时更新</span></span><br><span class="line">    <span class="keyword">while</span> (bytes_written &lt; count)</span><br><span class="line">    &#123; </span><br><span class="line">        <span class="comment">// 直到写完所有数据</span></span><br><span class="line">        <span class="built_in">memset</span>(io_buf, <span class="number">0</span>, BLOCK_SIZE);</span><br><span class="line">        sec_idx = file-&gt;fd_inode-&gt;i_size / BLOCK_SIZE;</span><br><span class="line">        sec_lba = all_blocks[sec_idx];</span><br><span class="line">        sec_off_bytes = file-&gt;fd_inode-&gt;i_size % BLOCK_SIZE;</span><br><span class="line">        sec_left_bytes = BLOCK_SIZE - sec_off_bytes;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 判断此次写入硬盘的数据大小 */</span></span><br><span class="line">        chunk_size = size_left &lt; sec_left_bytes ? size_left : sec_left_bytes;</span><br><span class="line">        <span class="keyword">if</span> (first_write_block)</span><br><span class="line">        &#123;</span><br><span class="line">            ide_read(cur_part-&gt;my_disk, sec_lba, io_buf, <span class="number">1</span>);</span><br><span class="line">            first_write_block = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">memcpy</span>(io_buf + sec_off_bytes, src, chunk_size);</span><br><span class="line">        ide_write(cur_part-&gt;my_disk, sec_lba, io_buf, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        src += chunk_size;  <span class="comment">// 将指针推移到下个新数据</span></span><br><span class="line">        file-&gt;fd_inode-&gt;i_size += chunk_size; <span class="comment">// 更新文件大小</span></span><br><span class="line">        file-&gt;fd_pos += chunk_size;</span><br><span class="line">        bytes_written += chunk_size;</span><br><span class="line">        size_left -= chunk_size;</span><br><span class="line">    &#125;</span><br><span class="line">    inode_sync(cur_part, file-&gt;fd_inode, io_buf);</span><br><span class="line">    sys_free(all_blocks);</span><br><span class="line">    sys_free(io_buf);</span><br><span class="line">    <span class="keyword">return</span> bytes_written;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后将write添加到系统调用中, 根据其文件描述符来判断数据是写入磁盘还是标准输出中。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int32_t</span> sys_write(<span class="keyword">int32_t</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *buf, <span class="keyword">uint32_t</span> count)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (fd &lt; <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (fd == stdout_no)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">char</span> tmp_buf[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">		<span class="built_in">memcpy</span>(tmp_buf, buf, count);</span><br><span class="line">		console_put_str(tmp_buf);</span><br><span class="line">		<span class="keyword">return</span> count;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">uint32_t</span> _fd = fd_local2global(fd);</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">wr_file</span> = &amp;<span class="title">file_table</span>[_<span class="title">fd</span>];</span></span><br><span class="line">	<span class="keyword">if</span> (wr_file-&gt;fd_flag &amp; O_WRONLY || wr_file-&gt;fd_flag &amp; O_RDWR)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">uint32_t</span> bytes_written = file_write(wr_file, buf, count);</span><br><span class="line">		<span class="keyword">return</span> bytes_written;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		console_put_str(<span class="string">"sys_write: not allowed to write file without flag O_RDWR or O_WRONLY\n"</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180514/em5hc8lG8k.png?imageslim" alt=""><br>上图是向文件file1中写入数据hello，world之后，磁盘上数据的表现。</p>
+<p>写入的位置是第0xa6c个扇区，将其*512转换成地址之后查看该地址的数，可以看到数据确实写入到磁盘上了。</p>
+<h1 id="读取文件"><a href="#读取文件" class="headerlink" title="读取文件"></a>读取文件</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 从文件file中读取count个字节写入buf, 返回读出的字节数,若到文件尾则返回-1 */</span></span><br><span class="line"><span class="keyword">int32_t</span> file_read(struct file *file, <span class="keyword">void</span> *buf, <span class="keyword">uint32_t</span> count)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">uint8_t</span> *buf_dst = (<span class="keyword">uint8_t</span> *)buf;</span><br><span class="line">    <span class="keyword">uint32_t</span> size = count, size_left = size;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 若要读取的字节数超过了文件可读的剩余量, 就用剩余量做为待读取的字节数 */</span></span><br><span class="line">    <span class="keyword">if</span> ((file-&gt;fd_pos + count) &gt; file-&gt;fd_inode-&gt;i_size)</span><br><span class="line">    &#123;</span><br><span class="line">        size = file-&gt;fd_inode-&gt;i_size - file-&gt;fd_pos;</span><br><span class="line">        size_left = size;</span><br><span class="line">        <span class="keyword">if</span> (size == <span class="number">0</span>)</span><br><span class="line">        &#123; </span><br><span class="line">            <span class="comment">// 若到文件尾则返回-1</span></span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint8_t</span> *io_buf = sys_malloc(BLOCK_SIZE);</span><br><span class="line">    <span class="keyword">if</span> (io_buf == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">uint32_t</span> *all_blocks = (<span class="keyword">uint32_t</span> *)sys_malloc(BLOCK_SIZE + <span class="number">48</span>); <span class="comment">// 用来记录文件所有的块地址</span></span><br><span class="line">    <span class="keyword">if</span> (all_blocks == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> block_read_start_idx = file-&gt;fd_pos / BLOCK_SIZE;        <span class="comment">// 数据所在块的起始地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> block_read_end_idx = (file-&gt;fd_pos + size) / BLOCK_SIZE; <span class="comment">// 数据所在块的终止地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> read_blocks = block_read_start_idx - block_read_end_idx; <span class="comment">// 如增量为0,表示数据在同一扇区</span></span><br><span class="line">    ASSERT(block_read_start_idx &lt; <span class="number">139</span> &amp;&amp; block_read_end_idx &lt; <span class="number">139</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int32_t</span> indirect_block_table; <span class="comment">// 用来获取一级间接表地址</span></span><br><span class="line">    <span class="keyword">uint32_t</span> block_idx;           <span class="comment">// 获取待读的块地址</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 以下开始构建all_blocks块地址数组,专门存储用到的块地址(本程序中块大小同扇区大小) */</span></span><br><span class="line">    <span class="keyword">if</span> (read_blocks == <span class="number">0</span>)</span><br><span class="line">    &#123; </span><br><span class="line">        <span class="comment">// 在同一扇区内读数据,不涉及到跨扇区读取</span></span><br><span class="line">        ASSERT(block_read_end_idx == block_read_start_idx);</span><br><span class="line">        <span class="keyword">if</span> (block_read_end_idx &lt; <span class="number">12</span>)</span><br><span class="line">        &#123; </span><br><span class="line">            <span class="comment">// 待读的数据在12个直接块之内</span></span><br><span class="line">            block_idx = block_read_end_idx;</span><br><span class="line">            all_blocks[block_idx] = file-&gt;fd_inode-&gt;i_sectors[block_idx];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123; </span><br><span class="line">            <span class="comment">// 若用到了一级间接块表,需要将表中间接块读进来</span></span><br><span class="line">            indirect_block_table = file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>];</span><br><span class="line">            ide_read(cur_part-&gt;my_disk, indirect_block_table, all_blocks + <span class="number">12</span>, <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;   </span><br><span class="line">        <span class="comment">// 若要读多个块</span></span><br><span class="line">        <span class="comment">/* 第一种情况: 起始块和终止块属于直接块*/</span></span><br><span class="line">        <span class="keyword">if</span> (block_read_end_idx &lt; <span class="number">12</span>)</span><br><span class="line">        &#123; </span><br><span class="line">            <span class="comment">// 数据结束所在的块属于直接块</span></span><br><span class="line">            block_idx = block_read_start_idx;</span><br><span class="line">            <span class="keyword">while</span> (block_idx &lt;= block_read_end_idx)</span><br><span class="line">            &#123;</span><br><span class="line">                all_blocks[block_idx] = file-&gt;fd_inode-&gt;i_sectors[block_idx];</span><br><span class="line">                block_idx++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (block_read_start_idx &lt; <span class="number">12</span> &amp;&amp; block_read_end_idx &gt;= <span class="number">12</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">/* 第二种情况: 待读入的数据跨越直接块和间接块两类*/</span></span><br><span class="line">            <span class="comment">/* 先将直接块地址写入all_blocks */</span></span><br><span class="line">            block_idx = block_read_start_idx;</span><br><span class="line">            <span class="keyword">while</span> (block_idx &lt; <span class="number">12</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                all_blocks[block_idx] = file-&gt;fd_inode-&gt;i_sectors[block_idx];</span><br><span class="line">                block_idx++;</span><br><span class="line">            &#125;</span><br><span class="line">            ASSERT(file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>] != <span class="number">0</span>); <span class="comment">// 确保已经分配了一级间接块表</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">/* 再将间接块地址写入all_blocks */</span></span><br><span class="line">            indirect_block_table = file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>];</span><br><span class="line">            ide_read(cur_part-&gt;my_disk, indirect_block_table, all_blocks + <span class="number">12</span>, <span class="number">1</span>); <span class="comment">// 将一级间接块表读进来写入到第13个块的位置之后</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">/* 第三种情况: 数据在间接块中*/</span></span><br><span class="line">            ASSERT(file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>] != <span class="number">0</span>);                            <span class="comment">// 确保已经分配了一级间接块表</span></span><br><span class="line">            indirect_block_table = file-&gt;fd_inode-&gt;i_sectors[<span class="number">12</span>];                  <span class="comment">// 获取一级间接表地址</span></span><br><span class="line">            ide_read(cur_part-&gt;my_disk, indirect_block_table, all_blocks + <span class="number">12</span>, <span class="number">1</span>); <span class="comment">// 将一级间接块表读进来写入到第13个块的位置之后</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 用到的块地址已经收集到all_blocks中,下面开始读数据 */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> sec_idx, sec_lba, sec_off_bytes, sec_left_bytes, chunk_size;</span><br><span class="line">    <span class="keyword">uint32_t</span> bytes_read = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (bytes_read &lt; size)</span><br><span class="line">    &#123; <span class="comment">// 直到读完为止</span></span><br><span class="line">        sec_idx = file-&gt;fd_pos / BLOCK_SIZE;</span><br><span class="line">        sec_lba = all_blocks[sec_idx];</span><br><span class="line">        sec_off_bytes = file-&gt;fd_pos % BLOCK_SIZE;</span><br><span class="line">        sec_left_bytes = BLOCK_SIZE - sec_off_bytes;</span><br><span class="line">        chunk_size = size_left &lt; sec_left_bytes ? size_left : sec_left_bytes; <span class="comment">// 待读入的数据大小</span></span><br><span class="line"></span><br><span class="line">        <span class="built_in">memset</span>(io_buf, <span class="number">0</span>, BLOCK_SIZE);</span><br><span class="line">        ide_read(cur_part-&gt;my_disk, sec_lba, io_buf, <span class="number">1</span>);</span><br><span class="line">        <span class="built_in">memcpy</span>(buf_dst, io_buf + sec_off_bytes, chunk_size);</span><br><span class="line"></span><br><span class="line">        buf_dst += chunk_size;</span><br><span class="line">        file-&gt;fd_pos += chunk_size;</span><br><span class="line">        bytes_read += chunk_size;</span><br><span class="line">        size_left -= chunk_size;</span><br><span class="line">    &#125;</span><br><span class="line">    sys_free(all_blocks);</span><br><span class="line">    sys_free(io_buf);</span><br><span class="line">    <span class="keyword">return</span> bytes_read;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="设置文件的读写偏移量"><a href="#设置文件的读写偏移量" class="headerlink" title="设置文件的读写偏移量"></a>设置文件的读写偏移量</h1><p>想象一下这种情况，在文件读取到文件尾的时候，再想去读取文件前面的部分。在目前的实现下，只能将该文件关闭之后，再重新打开，才能读取到之前的数据，这样做的话显然是不合理的。所以需要实现文件读写定位的功能。也就是lseek的实现。</p>
+<p>文件的读写偏移量的设置有三个基准数，文件头，文件当前位置，文件尾。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 文件读写位置偏移量</span></span><br><span class="line"><span class="keyword">enum</span> whence</span><br><span class="line">&#123;</span><br><span class="line">    SEEK_SET = <span class="number">1</span>,</span><br><span class="line">    SEEK_CUR,</span><br><span class="line">    SEEK_END</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 重置用于文件读写操作的偏移指针,成功时返回新的偏移量,出错时返回-1 */</span></span><br><span class="line"><span class="keyword">int32_t</span> sys_lseek(<span class="keyword">int32_t</span> fd, <span class="keyword">int32_t</span> offset, <span class="keyword">uint8_t</span> whence)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (fd &lt; <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	ASSERT(whence &gt; <span class="number">0</span> &amp;&amp; whence &lt; <span class="number">4</span>);</span><br><span class="line">	<span class="keyword">uint32_t</span> _fd = fd_local2global(fd);</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> *<span class="title">pf</span> = &amp;<span class="title">file_table</span>[_<span class="title">fd</span>];</span></span><br><span class="line">	<span class="keyword">int32_t</span> new_pos = <span class="number">0</span>; <span class="comment">//新的偏移量必须位于文件大小之内</span></span><br><span class="line">	<span class="keyword">int32_t</span> file_size = (<span class="keyword">int32_t</span>)pf-&gt;fd_inode-&gt;i_size;</span><br><span class="line">	<span class="keyword">switch</span> (whence)</span><br><span class="line">	&#123;</span><br><span class="line">	<span class="comment">/* SEEK_SET 新的读写位置是相对于文件开头再增加offset个位移量 */</span></span><br><span class="line">	<span class="keyword">case</span> SEEK_SET:</span><br><span class="line">		new_pos = offset;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* SEEK_CUR 新的读写位置是相对于当前的位置增加offset个位移量 */</span></span><br><span class="line">	<span class="keyword">case</span> SEEK_CUR: <span class="comment">// offse可正可负</span></span><br><span class="line">		new_pos = (<span class="keyword">int32_t</span>)pf-&gt;fd_pos + offset;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* SEEK_END 新的读写位置是相对于文件尺寸再增加offset个位移量 */</span></span><br><span class="line">	<span class="keyword">case</span> SEEK_END: <span class="comment">// 此情况下,offset应该为负值</span></span><br><span class="line">		new_pos = file_size + offset;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (new_pos &lt; <span class="number">0</span> || new_pos &gt; (file_size - <span class="number">1</span>))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	pf-&gt;fd_pos = new_pos;</span><br><span class="line">	<span class="keyword">return</span> pf-&gt;fd_pos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="删除文件"><a href="#删除文件" class="headerlink" title="删除文件"></a>删除文件</h1><p>删除文件主要是对资源的回收。主要有以下几部分的数据</p>
+<ol>
+<li>inode<ul>
+<li>inode bitmap</li>
+<li>inode table</li>
+<li>inode中的12个直接块和一个间接块</li>
+<li>存储间接块的扇区</li>
+</ul>
+</li>
+<li>目录项<ul>
+<li>该文件对应的目录项数据需要清0</li>
+<li>该文件删除之后，目录中不存在目录项，需要回收目录项对应的块</li>
+<li>目录inode中的size需要减去该文件目录项大小</li>
+<li>将目录inode同步到硬盘</li>
+</ul>
+</li>
+</ol>
+<p>上面两部分资源的回收主要通过inode_release和delete_dir_entry这两个函数实现，这里只贴出删除文件的整体调用过程。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 删除文件(非目录),成功返回0,失败返回-1 */</span></span><br><span class="line"><span class="keyword">int32_t</span> sys_unlink(<span class="keyword">const</span> <span class="keyword">char</span> *pathname)</span><br><span class="line">&#123;</span><br><span class="line">	ASSERT(<span class="built_in">strlen</span>(pathname) &lt; MAX_PATH_LEN);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 先检查待删除的文件是否存在 */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">path_search_record</span> <span class="title">searched_record</span>;</span></span><br><span class="line">	<span class="built_in">memset</span>(&amp;searched_record, <span class="number">0</span>, <span class="keyword">sizeof</span>(struct path_search_record));</span><br><span class="line">	<span class="keyword">int</span> inode_no = search_file(pathname, &amp;searched_record);</span><br><span class="line">	ASSERT(inode_no != <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (inode_no == <span class="number">-1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (searched_record.file_type == FT_DIRECTORY)</span><br><span class="line">	&#123;</span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 检查是否在已打开文件列表(文件表)中 */</span></span><br><span class="line">	<span class="keyword">uint32_t</span> file_idx = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (file_idx &lt; MAX_FILE_OPEN)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (file_table[file_idx].fd_inode != <span class="literal">NULL</span> &amp;&amp; (<span class="keyword">uint32_t</span>)inode_no == file_table[file_idx].fd_inode-&gt;i_no)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		file_idx++;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (file_idx &lt; MAX_FILE_OPEN)</span><br><span class="line">	&#123;</span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	ASSERT(file_idx == MAX_FILE_OPEN);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 为delete_dir_entry申请缓冲区 */</span></span><br><span class="line">	<span class="keyword">void</span> *io_buf = sys_malloc(SECTOR_SIZE + SECTOR_SIZE);</span><br><span class="line">	<span class="keyword">if</span> (io_buf == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dir</span> *<span class="title">parent_dir</span> = <span class="title">searched_record</span>.<span class="title">parent_dir</span>;</span></span><br><span class="line">	delete_dir_entry(cur_part, parent_dir, inode_no, io_buf);</span><br><span class="line">	inode_release(cur_part, inode_no);</span><br><span class="line">	sys_free(io_buf);</span><br><span class="line">	dir_close(searched_record.parent_dir);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>; <span class="comment">// 成功删除文件</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/13/filesystem3/" rel="next" title="十七. 文件系统三(文件的创建)">
+                <i class="fa fa-chevron-left"></i> 十七. 文件系统三(文件的创建)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/15/shell/" rel="prev" title="十九. fork的原理及实现">
+                十九. fork的原理及实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#写入文件"><span class="nav-number">1.</span> <span class="nav-text">写入文件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#读取文件"><span class="nav-number">2.</span> <span class="nav-text">读取文件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#设置文件的读写偏移量"><span class="nav-number">3.</span> <span class="nav-text">设置文件的读写偏移量</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#删除文件"><span class="nav-number">4.</span> <span class="nav-text">删除文件</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

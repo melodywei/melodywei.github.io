@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="函数调用约定调用约定从字面上理解，他是调用函数的一套约定。主要体现在一下三个方面  参数的传递方式，参数是存放在寄存器中还是栈中 参数的传递顺序，是从左到右传递还是从右到左传递 是调用者保存寄存器环境还是被调用者保存  在进行函数调用的时候，函数所需要传递的参数往往是不固定的。在计算机中并没有专门储存参数的硬件，因为参数的不确定性，该硬件的容量并不好确定，而且如果传递参数的过程中，函数被换下CPU">
+<meta property="og:type" content="article">
+<meta property="og:title" content="六. 函数调用约定与系统调用">
+<meta property="og:url" content="http://yoursite.com/2018/05/10/cdecl/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="函数调用约定调用约定从字面上理解，他是调用函数的一套约定。主要体现在一下三个方面  参数的传递方式，参数是存放在寄存器中还是栈中 参数的传递顺序，是从左到右传递还是从右到左传递 是调用者保存寄存器环境还是被调用者保存  在进行函数调用的时候，函数所需要传递的参数往往是不固定的。在计算机中并没有专门储存参数的硬件，因为参数的不确定性，该硬件的容量并不好确定，而且如果传递参数的过程中，函数被换下CPU">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180418/4h47HG63mF.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180418/77l9Hfm3c1.png?imageslim">
+<meta property="og:updated_time" content="2018-05-10T08:36:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="六. 函数调用约定与系统调用">
+<meta name="twitter:description" content="函数调用约定调用约定从字面上理解，他是调用函数的一套约定。主要体现在一下三个方面  参数的传递方式，参数是存放在寄存器中还是栈中 参数的传递顺序，是从左到右传递还是从右到左传递 是调用者保存寄存器环境还是被调用者保存  在进行函数调用的时候，函数所需要传递的参数往往是不固定的。在计算机中并没有专门储存参数的硬件，因为参数的不确定性，该硬件的容量并不好确定，而且如果传递参数的过程中，函数被换下CPU">
+<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180418/4h47HG63mF.png?imageslim">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/10/cdecl/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>六. 函数调用约定与系统调用 | melodyのblog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/10/cdecl/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">六. 函数调用约定与系统调用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-05-10 16:36:26" itemprop="dateCreated datePublished" datetime="2018-05-10T16:36:26+08:00">2018-05-10</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="函数调用约定"><a href="#函数调用约定" class="headerlink" title="函数调用约定"></a>函数调用约定</h1><p>调用约定从字面上理解，他是调用函数的一套约定。主要体现在一下三个方面</p>
+<ol>
+<li>参数的传递方式，参数是存放在寄存器中还是栈中</li>
+<li>参数的传递顺序，是从左到右传递还是从右到左传递</li>
+<li>是调用者保存寄存器环境还是被调用者保存</li>
+</ol>
+<p>在进行函数调用的时候，函数所需要传递的参数往往是不固定的。在计算机中并没有专门储存参数的硬件，因为参数的不确定性，该硬件的容量并不好确定，而且如果传递参数的过程中，函数被换下CPU，新的进程进行参数调用时还会覆盖之前的参数。</p>
+<p>考虑到这些方方面面，最后决定在栈中存储函数的参数。其优点如下</p>
+<ol>
+<li>每个进程都有自己的栈</li>
+<li>参数的内存地址不用花精力去维护，已经有栈机制自动帮我们维护</li>
+</ol>
+<p>参数储存的问题解决了，那么接下来讨论另外两个问题</p>
+<ol>
+<li>参数存储在栈中，那么谁来负责回收参数所占的栈空间，是调用者？还是被调用者</li>
+<li>当参数很多的时候后，主调函数将参数以什么样的顺序传递</li>
+</ol>
+<p>上面两个问题就涉及到具体的调用规定了</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180418/4h47HG63mF.png?imageslim" alt="mark"></p>
+<p>在这些调用约定中，我们最常用是以下几种约定</p>
+<ol>
+<li>cdecl</li>
+<li>stdcall</li>
+<li>thiscall</li>
+</ol>
+<p>cdecl 是c默认的调用约定。<br>stdcall 他是微软Win32 API的一准标准，我们常用的回调函数就是通过这种调用方式<br>thiscall 是c++中非静态类成员函数的默认调用约定</p>
+<h1 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h1><p>首先简单的介绍一下系统调用是什么，等后面需要真正实现系统调用的时候再来详细的说明</p>
+<p>系统调用是linux内核提供的一套子程序，主要是为了实现在用户态不能实现的功能，比如说最常见的读写硬盘文件，这些读写的方法肯定不能由用户程序来编写，而且用户程序也没有权限去直接操控硬件，这就需要操作系统的支持，需要操作系统提供读写硬盘的接口</p>
+<p>系统调用的入口只有一个，即第0x80号中断，通过eax指定子功能号。在linux中，系统调用是定义在 <strong>/usr/include/asm-generic-unistd.h</strong> 中</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180418/77l9Hfm3c1.png?imageslim" alt="mark"></p>
+<p>调用系统调用有两种方式</p>
+<ol>
+<li>通过操作系统提供的库函数进行系统调用</li>
+<li>直接通过0x80中断与系统通信</li>
+</ol>
+<p>我们想要自制kernel的话第一条路肯定走不通，因为没有库函数供我们调用，库函数都是我们自己写的。</p>
+<p>通过中断的方式进行系统调用需要了解一下系统调用输入参数的传递方式</p>
+<p>当输入的参数小于等于5个时，linux用寄存器传递参数。当输入的参数大于5个时，把参数按照顺序放入连续的内存中，并把这块内存的首地址放入ebx中</p>
+<p>通过寄存器传递参数时</p>
+<p>eax存放子功能号</p>
+<p>ebx存放第一个参数</p>
+<p>ecx存放第二个参数</p>
+<p>edx存放第三个参数</p>
+<p>esi存放第四个参数</p>
+<p>edi存放地五个参数</p>
+<p>下面是一个简单的syscall_wirte的简单实现</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">section</span> .data</span><br><span class="line"><span class="symbol">str_c_lib:</span> <span class="built_in">db</span> <span class="string">"c library says: hello world!"</span>, <span class="number">0xa</span></span><br><span class="line">str_c_lib_len <span class="built_in">equ</span> $-str_c_lib</span><br><span class="line"></span><br><span class="line"><span class="symbol">str_syscall:</span> <span class="built_in">db</span> <span class="string">"syscall says: hello world!"</span>, <span class="number">0xa</span></span><br><span class="line">str_syscall_len <span class="built_in">equ</span> $-str_syscall</span><br><span class="line"></span><br><span class="line"><span class="meta">section</span> .text</span><br><span class="line"><span class="meta">global</span> _start</span><br><span class="line"><span class="symbol">_start:</span></span><br><span class="line"> <span class="comment">;  方式 1 ：模拟 c 语言中系统调用库函数 write ;</span></span><br><span class="line">    <span class="keyword">push</span> str_c_lib_len </span><br><span class="line">    <span class="keyword">push</span> str_c_lib</span><br><span class="line">    <span class="keyword">push</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">call</span> simu_write</span><br><span class="line">    <span class="keyword">add</span> <span class="built_in">esp</span>, <span class="number">12</span></span><br><span class="line"><span class="comment">;  方式 2 ：跨过库函数，直接进行系统调用</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">eax</span>,<span class="number">4</span>  <span class="comment">;第4号子功能是 write 系统调用（不是 c 库函数 write)  </span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ebx</span>, <span class="number">1</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ecx</span>, str_syscall</span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">edx</span>, str_syscall_len</span><br><span class="line">    <span class="keyword">int</span> Ox80  <span class="comment">;发起中断，通知 Linux 完成请求的功能</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;   退出程序</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">eax</span>, <span class="number">1</span>  <span class="comment">;第1号子功能是exit</span></span><br><span class="line">    <span class="keyword">int</span> <span class="number">0x80</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">sumu_write:</span></span><br><span class="line">    <span class="keyword">push</span> <span class="built_in">ebp</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ebp</span>, <span class="built_in">esp</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">eax</span>, <span class="number">4</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ebx</span>, [<span class="built_in">ebp</span> + <span class="number">8</span>]</span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ecx</span>, [<span class="built_in">ebp</span> + <span class="number">12</span>]</span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">edx</span>, [<span class="built_in">ebp</span> + <span class="number">16</span>]</span><br><span class="line">    <span class="keyword">int</span> <span class="number">0x80</span></span><br><span class="line">    <span class="keyword">pop</span> <span class="built_in">ebp</span></span><br><span class="line">    <span class="keyword">ret</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/08/filesystem/" rel="next" title="十五. 文件系统一(文件系统的基本概念)">
+                <i class="fa fa-chevron-left"></i> 十五. 文件系统一(文件系统的基本概念)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/12/filesystem2/" rel="prev" title="十六. 文件系统二(创建文件系统)">
+                十六. 文件系统二(创建文件系统) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#函数调用约定"><span class="nav-number">1.</span> <span class="nav-text">函数调用约定</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#系统调用"><span class="nav-number">2.</span> <span class="nav-text">系统调用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

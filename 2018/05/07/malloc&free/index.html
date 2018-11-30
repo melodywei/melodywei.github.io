@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="之前的内容中已经实现过内存分配的功能，但之前的内存管理模块中只是实现了内核空间的内存分配，而且每次分配的空间都是已页为单位，也就是只能分配页的整数倍的空间。已页为单位的内存确实是最利于操作系统管理的，但是当只需要小块内存区域的时候，之前的内存管理模块就无法完成了。所以在这里要完善之前的内存管理模块，使其能够支持小块内存的分配。有了底层的内存管理模块的支撑之后，malloc和free的实现就非常容易">
+<meta property="og:type" content="article">
+<meta property="og:title" content="十四. malloc&amp;free的实现">
+<meta property="og:url" content="http://yoursite.com/2018/05/07/malloc&free/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="之前的内容中已经实现过内存分配的功能，但之前的内存管理模块中只是实现了内核空间的内存分配，而且每次分配的空间都是已页为单位，也就是只能分配页的整数倍的空间。已页为单位的内存确实是最利于操作系统管理的，但是当只需要小块内存区域的时候，之前的内存管理模块就无法完成了。所以在这里要完善之前的内存管理模块，使其能够支持小块内存的分配。有了底层的内存管理模块的支撑之后，malloc和free的实现就非常容易">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/f7K8iefkG2.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/GFHj8JBHIe.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/C77IidECHb.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/0k3HHmj4AA.png?imageslim">
+<meta property="og:updated_time" content="2018-05-07T10:58:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="十四. malloc&amp;free的实现">
+<meta name="twitter:description" content="之前的内容中已经实现过内存分配的功能，但之前的内存管理模块中只是实现了内核空间的内存分配，而且每次分配的空间都是已页为单位，也就是只能分配页的整数倍的空间。已页为单位的内存确实是最利于操作系统管理的，但是当只需要小块内存区域的时候，之前的内存管理模块就无法完成了。所以在这里要完善之前的内存管理模块，使其能够支持小块内存的分配。有了底层的内存管理模块的支撑之后，malloc和free的实现就非常容易">
+<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/f7K8iefkG2.png?imageslim">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/07/malloc&free/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>十四. malloc&free的实现 | melodyのblog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/07/malloc&free/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">十四. malloc&free的实现
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-05-07 18:58:26" itemprop="dateCreated datePublished" datetime="2018-05-07T18:58:26+08:00">2018-05-07</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>之前的内容中已经实现过内存分配的功能，但之前的内存管理模块中只是实现了内核空间的内存分配，而且每次分配的空间都是已页为单位，也就是只能分配页的整数倍的空间。已页为单位的内存确实是最利于操作系统管理的，但是当只需要小块内存区域的时候，之前的内存管理模块就无法完成了。所以在这里要完善之前的内存管理模块，使其能够支持小块内存的分配。有了底层的内存管理模块的支撑之后，malloc和free的实现就非常容易了。</p>
+<h1 id="malloc底层原理"><a href="#malloc底层原理" class="headerlink" title="malloc底层原理"></a>malloc底层原理</h1><p>之前的内存管理模块中是通过bitmap对内存进行管理的，bitmap中的每一个bit位就代表一页大小的内存，该位为1时表示这页已经分配出去了。那么对小块内存进行分配的时候，同样需要一个结构来记录这块内存的情况，也就是说，要通过一种结构来对内存的分配与释放进行管理。</p>
+<p>arena是一大块的内存被划分的多个小的内存块的内存仓库。按照内存块的大小，可以划分成不同规格的arena。比如一种arena中全是32byte的内存块，它就只相应32byte以下内存空间的分配。这一整块arena的大小同样是页的整数倍，按照申请内存空间的大小，这个arena可能是1页或者多页。</p>
+<p>按照这种原理，arena就由两部分组成，一是这块内存的元信息，用来描述这个arena中剩余的内存块，二是内存池区域，里面就是多个大小相同的内存块。其结构如下图所示</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180507/f7K8iefkG2.png?imageslim" alt="arena结构"></p>
+<p>一块arena大小的内存总有分配完的时候，也就是该arena中的所有mem_block都分配出去了，那么肯定需要新增一个与之前arena规格相同的arena来满足内存的需求，那么这些相同规格arena之前同样需要一个结构来进行管理，这个结构用来记录arena的规格以及同规格arena中所有空闲内存块链表</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180507/GFHj8JBHIe.png?imageslim" alt="内存块描述符"></p>
+<p>内存块描述符中会将所有同规格arena的空间内存块进行汇总，它相当于所有内存块的大仓库，分配内存的时候经过这个大仓库，找到里面的某个arena，也就是小仓库，最后从这个arena中找到某个空闲的内存块，将其分配出去。这个过程是不是和现实生活中从仓库取物品很类似。</p>
+<p>arena中主要是针对小内存分配的管理，里面的内存块规格最大不会超过1024byte，那么对于超过1024byte的空间如何分配呢？一种可能的情况是将多个内存块合并起来，这些合并的内存块组成这个大空间，但是用这种方式对内存块信息的维护就变的极其麻烦。所以对于大的内存就不进行内存块的划分，它的arena就变成了这个样子</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180507/C77IidECHb.png?imageslim" alt="mark"></p>
+<p>这里我划分了7种规格的arena，分别为16byte, 32byte, 64byte, …. 1024byte。一个arena一般占用1页也就是4096byte，arena中的元信息在设计中它会占用12byte大小，对于规格为16byte的arena来说，它有(4096 - 12) / 16 = 255个内存块，有4byte的空间被浪费。</p>
+<p>在内存分配的过程中，小于16byte的空间就会采用16byte的arena进行分配，后面同理。</p>
+<h1 id="实现malloc"><a href="#实现malloc" class="headerlink" title="实现malloc"></a>实现malloc</h1><p>说了那么多原理，还是来看看代码实现，从源码中能够更清晰的看出其原理</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 内存块描述符</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mem_block_desc</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> block_size;    <span class="comment">// 内存块规格</span></span><br><span class="line">    <span class="keyword">uint32_t</span> blocks_per_arena;  <span class="comment">//本arena中可容纳mem_block的数量</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list</span> <span class="title">free_list</span>;</span>  <span class="comment">// 目前可用的mem_block链表</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">arena</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">mem_block_desc</span> *<span class="title">desc</span>;</span> <span class="comment">// arena中的元信息</span></span><br><span class="line">    <span class="keyword">uint32_t</span> cnt; <span class="comment">// 空闲内存块的数量</span></span><br><span class="line">    <span class="keyword">bool</span> large; <span class="comment">// 是否为大内存，当申请大内存时因为不会对内存块进行划分，他的desc会被置为NULL</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 内存块描述符个数</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DESC_CNT 7</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mem_block_desc</span> <span class="title">k_block_descs</span>[<span class="title">DESC_CNT</span>];</span></span><br></pre></td></tr></table></figure>
+<p>内存管理的结构如上面所示，每个成员的作用都已经用注释说明了。需要注意的是当large为false时，该arena的内存块描述符会为NULL，因为该arena不会划分小的内存块，而是作为一个整体使用，且cnt不再表示空闲内存块的数量，而是表示所占用的页框数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">block_desc_init</span><span class="params">(struct mem_block_desc *desc_array)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">uint16_t</span> desc_idx, block_size = <span class="number">16</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (desc_idx = <span class="number">0</span>; desc_idx &lt; DESC_CNT; ++desc_idx)</span><br><span class="line">    &#123;</span><br><span class="line">        desc_array[desc_idx].block_size = block_size;</span><br><span class="line"></span><br><span class="line">        desc_array[desc_idx].blocks_per_arena = (PG_SIZE - <span class="keyword">sizeof</span>(struct arena)) / block_size;</span><br><span class="line">        list_init(&amp;desc_array[desc_idx].free_list);</span><br><span class="line">        block_size *= <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对7种规格的内存块描述符进行初始化。</p>
+<p>接下来就看sys_malloc的具体实现，该函数就是在堆上分配指定大小的空间。这也是malloc的底层实现。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">sys_malloc</span><span class="params">(<span class="keyword">uint32_t</span> size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">enum</span> pool_flags pf;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pool</span> *<span class="title">mem_pool</span>;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> pool_size;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">mem_block_desc</span> *<span class="title">descs</span>;</span></span><br><span class="line">    task_struct *cur_thread = running_thread();</span><br><span class="line">    <span class="comment">// 判断是内核还是用户进程需要分配空间</span></span><br><span class="line">    <span class="keyword">if</span>(cur_thread-&gt;pgdir == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        pf = PF_KERNEL;</span><br><span class="line">        pool_size = kernel_pool.pool_size;</span><br><span class="line">        mem_pool = &amp;kernel_pool;</span><br><span class="line">        descs = k_block_descs;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        pf = PF_USER;</span><br><span class="line">        pool_size = user_pool.pool_size;</span><br><span class="line">        mem_pool = &amp;user_pool;</span><br><span class="line">        descs = cur_thread-&gt;u_block_desc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(!(size &gt; <span class="number">0</span> &amp;&amp; size &lt; pool_size))</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">arena</span> *<span class="title">a</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">mem_block</span> *<span class="title">b</span>;</span></span><br><span class="line">    lock_acquire(&amp;mem_pool-&gt;lock);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理大内存分配的情况，直接分配。</span></span><br><span class="line">    <span class="comment">// 分配的大小对4096向上取整</span></span><br><span class="line">    <span class="keyword">if</span>(size &gt; <span class="number">1024</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">uint32_t</span> page_cnt = DIV_ROUND_UP(size + <span class="keyword">sizeof</span>(struct arena), PG_SIZE);</span><br><span class="line"></span><br><span class="line">        a = malloc_page(pf, page_cnt);</span><br><span class="line">        <span class="keyword">if</span> (a != <span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">memset</span>(a, <span class="number">0</span>, page_cnt * PG_SIZE);</span><br><span class="line"></span><br><span class="line">            a-&gt;desc = <span class="literal">NULL</span>;</span><br><span class="line">            a-&gt;cnt = page_cnt;</span><br><span class="line">            a-&gt;large = <span class="literal">true</span>;</span><br><span class="line">            lock_release(&amp;mem_pool-&gt;lock);</span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">void</span> *)(a + <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            lock_release(&amp;mem_pool-&gt;lock);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 小内存的分配情况</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> desc_idx = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 找到使用哪种规格的内存描述符</span></span><br><span class="line">        <span class="keyword">for</span> (; desc_idx &lt; DESC_CNT; ++desc_idx)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(size &lt;= descs[desc_idx].block_size)</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 该内存块描述符中的arena为空时，首先为其分配arena</span></span><br><span class="line">        <span class="comment">// 然后会将该arena根据其描述符中的规格大小进行内存块的划分</span></span><br><span class="line">        <span class="comment">// 划分的过程主要是通过arena2block这个函数对arena中的地址进行转换，使其指向下一个内存块所在的首地址，最后添加到链表中</span></span><br><span class="line">        <span class="keyword">if</span> (list_empty(&amp;descs[desc_idx].free_list))</span><br><span class="line">        &#123;</span><br><span class="line">            a = malloc_page(pf, <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span>(a == <span class="literal">NULL</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                lock_release(&amp;mem_pool-&gt;lock);</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="built_in">memset</span>(a, <span class="number">0</span>, PG_SIZE);</span><br><span class="line"></span><br><span class="line">            a-&gt;desc = &amp;descs[desc_idx];</span><br><span class="line">            a-&gt;cnt = descs[desc_idx].blocks_per_arena;</span><br><span class="line">            a-&gt;large = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">enum</span> intr_status old_status = intr_disable();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">uint32_t</span> block_idx = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (; block_idx &lt; descs[desc_idx].blocks_per_arena; ++block_idx)</span><br><span class="line">            &#123;</span><br><span class="line">                b = arena2block(a, block_idx);</span><br><span class="line">                ASSERT(!elem_find(&amp;a-&gt;desc-&gt;free_list, &amp;b-&gt;free_elem));</span><br><span class="line">                list_append(&amp;a-&gt;desc-&gt;free_list, &amp;b-&gt;free_elem);</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">            intr_set_status(old_status);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 有空闲的内存块之后找到该内存块相对于arena的偏移地址，该地址便为分配到的空间的首地址</span></span><br><span class="line">        b = elem2entry(struct mem_block, free_elem, list_pop(&amp;descs[desc_idx].free_list));</span><br><span class="line">        <span class="built_in">memset</span>(b, <span class="number">0</span>, descs[desc_idx].block_size);</span><br><span class="line">        a = block2arena(b);</span><br><span class="line">        a-&gt;cnt--;</span><br><span class="line">        lock_release(&amp;mem_pool-&gt;lock);</span><br><span class="line">        <span class="keyword">return</span> (<span class="keyword">void</span> *)b;    </span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该函数整体的执行流程如下</p>
+<p>首先判断是内核还是用户进程需要分配空间，确定在相应的内存池中进行分配</p>
+<p>申请的空间大于1024byte的情况，会分配申请内存大小+元信息大小对4096向上取整的页框数，比如说申请的内存大小为4092byte，元信息的大小为12byte，所以总共需要5004byte，也就是说需要2个页框，最后返回的地址要跳过元信息。</p>
+<p>对于小于1024byte的情况，从7种规格的arena中找个分配颗粒与所需大小最接近的arena，比如33byte，就会使用64byte的arena。申请63byte空间，同样会使用64byte的arena。也就是说，即使只需要33byte的空间，实际分配的过程中，还是会占用64byte的内存空间。这种空间的浪费是无法避免的。下面看一下执行的结果</p>
+<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180507/0k3HHmj4AA.png?imageslim" alt="mark"></p>
+<p>在调用的过程中申请了两块内存空间，第一块空间的大小为33byte，第二块空间的大小为63byte，这两块空间都是使用64byte的arena，因为是第一次申请空间，所以首先会建立64byte的arena，也就是说这两块空间都会使用同一个页框，该页框的首地址为0xc0102000，首先需要跳过元信息的大小为0xc，所以第一块内存的地址就是0xc0102000+0xc， 第二块内存的地址是0xc0102000 + 0xc + 0x40。</p>
+<p>底层的封装已经封装好了，接下来就要通过系统调用，提供对外的接口啦<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc</span><span class="params">(<span class="keyword">uint32_t</span> size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span>*)_syscall1(SYS_MALLOC, size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>系统调用的原理就是根据传递的子功能号去调用相应的中断处理例程，这里的中断处理例程就是上面的sys_malloc这个函数啦。</p>
+<h1 id="实现free"><a href="#实现free" class="headerlink" title="实现free"></a>实现free</h1><p>有了申请内存之后就得有内存的释放，毕竟有借得有换。内存释放的过程其实并不神秘，想想之前申请内存的步骤</p>
+<ol>
+<li>在虚拟内存池中分配内存地址，它的实质也就是在bitmap中将相应的位置1。</li>
+<li>在物理内存池中分配内存地址，这两步说的内存都是以页为单位的，他们是通过bitmap进行管理的。这里同样只需要在物理内存池的bitmap中将相应的位置1</li>
+<li>建立虚拟页与物理页之间的映射关系。</li>
+</ol>
+<p>所以咯，内存的释放只需要将相应的bitmap中的相应位置0即可，然后在页表中去掉对虚拟地址的映射</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将物理地址pg_phy_addr对应的页回收</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">pfree</span><span class="params">(<span class="keyword">uint32_t</span> pg_phy_addr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pool</span> *<span class="title">mem_pool</span>;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> bit_idx = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(pg_phy_addr &gt;= user_pool.phy_addr_start)</span><br><span class="line">    &#123;</span><br><span class="line">        mem_pool = &amp;user_pool;</span><br><span class="line">        bit_idx = (pg_phy_addr - user_pool.phy_addr_start) / PG_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        mem_pool = &amp;kernel_pool;</span><br><span class="line">        bit_idx = (pg_phy_addr - kernel_pool.phy_addr_start) / PG_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    bitmap_set(&amp;mem_pool-&gt;pool_bitmap, bit_idx , <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 去掉页表中虚拟地址的映射，只需要将pte中的P位置0</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">page_table_pte_remove</span><span class="params">(<span class="keyword">uint32_t</span> vaddr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> *pte = pte_ptr(vaddr);</span><br><span class="line">    *pte &amp;= ~PG_P_1;</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"invlpg %0"</span> :: <span class="string">"m"</span> (vaddr):<span class="string">"memory"</span>)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 回收虚拟内存</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">vaddr_remove</span><span class="params">(<span class="keyword">enum</span> pool_flags pf, <span class="keyword">void</span> *_vaddr, <span class="keyword">uint32_t</span> pg_cnt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> bit_idx_start = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">uint32_t</span> vaddr = (<span class="keyword">uint32_t</span>)_vaddr;</span><br><span class="line">    <span class="keyword">uint32_t</span> cnt = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pf == PF_KERNEL)</span><br><span class="line">    &#123;</span><br><span class="line">        bit_idx_start = (vaddr - kernel_vaddr.vaddr_start) / PG_SIZE;</span><br><span class="line">        <span class="keyword">while</span> (cnt &lt; pg_cnt)</span><br><span class="line">        &#123;</span><br><span class="line">            bitmap_set(&amp;kernel_vaddr.vaddr_bitmap, bit_idx_start + cnt++, <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        task_struct *cur_thread = running_thread();</span><br><span class="line">        bit_idx_start = (vaddr - cur_thread-&gt;userprog_vaddr.vaddr_start) / PG_SIZE;</span><br><span class="line">        <span class="keyword">while</span> (cnt &lt; pg_cnt)</span><br><span class="line">        &#123;</span><br><span class="line">            bitmap_set(&amp;cur_thread-&gt;userprog_vaddr.vaddr_bitmap, bit_idx_start + cnt++, <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面这些过程是对整页的内存进行释放操作，对于小块内存的回收则更加简单了，只需要将这个内存块加入到该内存块对应的arena的空闲链表中即可。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 回收内存ptr */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sys_free</span><span class="params">(<span class="keyword">void</span>* ptr)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ASSERT(ptr != <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (ptr != <span class="literal">NULL</span>) </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">enum</span> pool_flags PF;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">pool</span>* <span class="title">mem_pool</span>;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 判断是线程还是进程 */</span></span><br><span class="line">        <span class="keyword">if</span> (running_thread()-&gt;pgdir == <span class="literal">NULL</span>) </span><br><span class="line">        &#123;</span><br><span class="line">            ASSERT((<span class="keyword">uint32_t</span>)ptr &gt;= K_HEAP_START);</span><br><span class="line">            PF = PF_KERNEL;</span><br><span class="line">            mem_pool = &amp;kernel_pool;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        &#123; </span><br><span class="line">            PF = PF_USER;</span><br><span class="line">             mem_pool = &amp;user_pool;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        lock_acquire(&amp;mem_pool-&gt;lock);</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">mem_block</span>* <span class="title">b</span> = <span class="title">ptr</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">arena</span>* <span class="title">a</span> = <span class="title">block2arena</span>(<span class="title">b</span>);</span>      <span class="comment">// 把mem_block转换成arena,获取元信息  </span></span><br><span class="line">        ASSERT(a-&gt;large == <span class="number">0</span> || a-&gt;large == <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (a-&gt;desc == <span class="literal">NULL</span> &amp;&amp; a-&gt;large == <span class="literal">true</span>) </span><br><span class="line">        &#123; <span class="comment">// 大于1024的内存</span></span><br><span class="line">            mfree_page(PF, a, a-&gt;cnt); </span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        &#123;               </span><br><span class="line">            <span class="comment">// 小于等于1024的内存块</span></span><br><span class="line">            <span class="comment">/* 先将内存块回收到free_list */</span></span><br><span class="line">            list_append(&amp;a-&gt;desc-&gt;free_list, &amp;b-&gt;free_elem);</span><br><span class="line">     </span><br><span class="line">            <span class="comment">/* 再判断此arena中的内存块是否都是空闲,如果是就释放arena */</span></span><br><span class="line">            <span class="keyword">if</span> (++a-&gt;cnt == a-&gt;desc-&gt;blocks_per_arena) </span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">uint32_t</span> block_idx;</span><br><span class="line">                <span class="keyword">for</span> (block_idx = <span class="number">0</span>; block_idx &lt; a-&gt;desc-&gt;blocks_per_arena; block_idx++  ) </span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="class"><span class="keyword">struct</span> <span class="title">mem_block</span>*  <span class="title">b</span> = <span class="title">arena2block</span>(<span class="title">a</span>, <span class="title">block_idx</span>);</span></span><br><span class="line">                    ASSERT(elem_find(&amp;a-&gt;desc-&gt;free_list, &amp;b-&gt;free_elem));</span><br><span class="line">                    list_remove(&amp;b-&gt;free_elem);</span><br><span class="line">                &#125;</span><br><span class="line">                mfree_page(PF, a, <span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        lock_release(&amp;mem_pool-&gt;lock);</span><br><span class="line">   &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于大块的内存，就如之前所说，释放其对应的页。对于小块内存，直接加入其对应的空闲链表中，如果这一整页的内存块都是空闲的，释放该页。</p>
+<p>提供系统调用free<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free</span><span class="params">(<span class="keyword">void</span> *ptr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    _syscall1(SYS_FREE, ptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/01/syscall/" rel="next" title="十三. 实现系统调用">
+                <i class="fa fa-chevron-left"></i> 十三. 实现系统调用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/08/filesystem/" rel="prev" title="十五. 文件系统一(文件系统的基本概念)">
+                十五. 文件系统一(文件系统的基本概念) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#malloc底层原理"><span class="nav-number">1.</span> <span class="nav-text">malloc底层原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实现malloc"><span class="nav-number">2.</span> <span class="nav-text">实现malloc</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实现free"><span class="nav-number">3.</span> <span class="nav-text">实现free</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

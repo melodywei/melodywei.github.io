@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="路径解析转换路径有绝对路径和相对路径之分，在平常使用linux的过程中，我们在输入命令和参数的时候，往往使用的都是相对路径。相对路径是基于当前的工作路径的出的。 当前工作路径 + 相对路径 = 绝对路径 比如说当前工作路径为 /home/work 此时输入 ls file，那么file所在的绝对路径就是 /home/work/file 了。 因为这个kernel比较简单，如果路径以根目录/ 开头，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二十. 内建shell的实现">
+<meta property="og:url" content="http://yoursite.com/2018/05/15/shell1/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="路径解析转换路径有绝对路径和相对路径之分，在平常使用linux的过程中，我们在输入命令和参数的时候，往往使用的都是相对路径。相对路径是基于当前的工作路径的出的。 当前工作路径 + 相对路径 = 绝对路径 比如说当前工作路径为 /home/work 此时输入 ls file，那么file所在的绝对路径就是 /home/work/file 了。 因为这个kernel比较简单，如果路径以根目录/ 开头，">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/75CmAAFmFD.png?imageslim">
+<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/2Fck56F72A.png?imageslim">
+<meta property="og:updated_time" content="2018-05-15T07:38:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="二十. 内建shell的实现">
+<meta name="twitter:description" content="路径解析转换路径有绝对路径和相对路径之分，在平常使用linux的过程中，我们在输入命令和参数的时候，往往使用的都是相对路径。相对路径是基于当前的工作路径的出的。 当前工作路径 + 相对路径 = 绝对路径 比如说当前工作路径为 /home/work 此时输入 ls file，那么file所在的绝对路径就是 /home/work/file 了。 因为这个kernel比较简单，如果路径以根目录/ 开头，">
+<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/75CmAAFmFD.png?imageslim">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/15/shell1/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>二十. 内建shell的实现 | melodyのblog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/15/shell1/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">二十. 内建shell的实现
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-05-15 15:38:14" itemprop="dateCreated datePublished" datetime="2018-05-15T15:38:14+08:00">2018-05-15</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="路径解析转换"><a href="#路径解析转换" class="headerlink" title="路径解析转换"></a>路径解析转换</h1><p>路径有绝对路径和相对路径之分，在平常使用linux的过程中，我们在输入命令和参数的时候，往往使用的都是相对路径。相对路径是基于当前的工作路径的出的。</p>
+<p>当前工作路径 + 相对路径 = 绝对路径</p>
+<p>比如说当前工作路径为 <strong>/home/work</strong> 此时输入 ls file，那么file所在的绝对路径就是 <strong>/home/work/file</strong> 了。</p>
+<p>因为这个kernel比较简单，如果路径以根目录/ 开头，就会被认为是绝对路径，其他的路径都会被认为是相对路径，会将其转换成绝对路径来使用。</p>
+<p>以下是路径转换函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 将路径old_abs_path中的..和.转换为实际路径后存入new_abs_path */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">wash_path</span><span class="params">(<span class="keyword">char</span> *old_abs_path, <span class="keyword">char</span> *new_abs_path)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    assert(old_abs_path[<span class="number">0</span>] == <span class="string">'/'</span>);</span><br><span class="line">    <span class="keyword">char</span> name[MAX_FILE_NAME_LEN] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">char</span> *sub_path = old_abs_path;</span><br><span class="line">    sub_path = path_parse(sub_path, name);</span><br><span class="line">    <span class="keyword">if</span> (name[<span class="number">0</span>] == <span class="number">0</span>)</span><br><span class="line">    &#123; </span><br><span class="line">        <span class="comment">// 若只键入了"/",直接将"/"存入new_abs_path后返回</span></span><br><span class="line">        new_abs_path[<span class="number">0</span>] = <span class="string">'/'</span>;</span><br><span class="line">        new_abs_path[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    new_abs_path[<span class="number">0</span>] = <span class="number">0</span>; <span class="comment">// 避免传给new_abs_path的缓冲区不干净</span></span><br><span class="line">    <span class="built_in">strcat</span>(new_abs_path, <span class="string">"/"</span>);</span><br><span class="line">    <span class="keyword">while</span> (name[<span class="number">0</span>])</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">/* 如果是上一级目录“..” */</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">".."</span>, name))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">char</span> *slash_ptr = <span class="built_in">strrchr</span>(new_abs_path, <span class="string">'/'</span>);</span><br><span class="line">            <span class="comment">/*如果未到new_abs_path中的顶层目录,就将最右边的'/'替换为0,</span></span><br><span class="line"><span class="comment">	 这样便去除了new_abs_path中最后一层路径,相当于到了上一级目录 */</span></span><br><span class="line">            <span class="keyword">if</span> (slash_ptr != new_abs_path)</span><br><span class="line">            &#123; <span class="comment">// 如new_abs_path为“/a/b”,".."之后则变为“/a”</span></span><br><span class="line">                *slash_ptr = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;   <span class="comment">// 如new_abs_path为"/a",".."之后则变为"/"</span></span><br><span class="line">                <span class="comment">/* 若new_abs_path中只有1个'/',即表示已经到了顶层目录,就将下一个字符置为结束符0. */</span></span><br><span class="line">                *(slash_ptr + <span class="number">1</span>) = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">strcmp</span>(<span class="string">"."</span>, name))</span><br><span class="line">        &#123; <span class="comment">// 如果路径不是‘.’,就将name拼接到new_abs_path</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">strcmp</span>(new_abs_path, <span class="string">"/"</span>))</span><br><span class="line">            &#123; <span class="comment">// 如果new_abs_path不是"/",就拼接一个"/",此处的判断是为了避免路径开头变成这样"//"</span></span><br><span class="line">                <span class="built_in">strcat</span>(new_abs_path, <span class="string">"/"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">strcat</span>(new_abs_path, name);</span><br><span class="line">        &#125; <span class="comment">// 若name为当前目录".",无须处理new_abs_path</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 继续遍历下一层路径 */</span></span><br><span class="line">        <span class="built_in">memset</span>(name, <span class="number">0</span>, MAX_FILE_NAME_LEN);</span><br><span class="line">        <span class="keyword">if</span> (sub_path)</span><br><span class="line">        &#123;</span><br><span class="line">            sub_path = path_parse(sub_path, name);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 将path处理成不含..和.的绝对路径,存储在final_path */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">make_clear_abs_path</span><span class="params">(<span class="keyword">char</span> *path, <span class="keyword">char</span> *final_path)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> abs_path[MAX_PATH_LEN] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="comment">/* 先判断是否输入的是绝对路径 */</span></span><br><span class="line">    <span class="keyword">if</span> (path[<span class="number">0</span>] != <span class="string">'/'</span>)</span><br><span class="line">    &#123; </span><br><span class="line">        <span class="comment">// 若输入的不是绝对路径,就拼接成绝对路径</span></span><br><span class="line">        <span class="built_in">memset</span>(abs_path, <span class="number">0</span>, MAX_PATH_LEN);</span><br><span class="line">        <span class="keyword">if</span> (getcwd(abs_path, MAX_PATH_LEN) != <span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (!((abs_path[<span class="number">0</span>] == <span class="string">'/'</span>) &amp;&amp; (abs_path[<span class="number">1</span>] == <span class="number">0</span>)))</span><br><span class="line">            &#123; <span class="comment">// 若abs_path表示的当前目录不是根目录/</span></span><br><span class="line">                <span class="built_in">strcat</span>(abs_path, <span class="string">"/"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">strcat</span>(abs_path, path);</span><br><span class="line">    wash_path(abs_path, final_path);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>路径转换完成之后接下来就来实现几个常用的shell。</p>
+<h1 id="ls"><a href="#ls" class="headerlink" title="ls"></a>ls</h1><p>ls的命令支持以下形式 <strong>ls -l, ls -h, ls filename</strong>，它们的功能自不必多说，函数的前半部分对其参数进行解析，后半部分根据参数对应的功能构造好路径，将对应的信息输出出来。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* ls命令的内建函数 */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">buildin_ls</span><span class="params">(<span class="keyword">uint32_t</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> *pathname = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">file_stat</span>;</span></span><br><span class="line">    <span class="built_in">memset</span>(&amp;file_stat, <span class="number">0</span>, <span class="keyword">sizeof</span>(struct stat));</span><br><span class="line">    <span class="keyword">bool</span> long_info = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">uint32_t</span> arg_path_nr = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">uint32_t</span> arg_idx = <span class="number">1</span>; <span class="comment">// 跨过argv[0],argv[0]是字符串“ls”</span></span><br><span class="line">    <span class="keyword">while</span> (arg_idx &lt; argc)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (argv[arg_idx][<span class="number">0</span>] == <span class="string">'-'</span>)</span><br><span class="line">        &#123; <span class="comment">// 如果是选项,单词的首字符是-</span></span><br><span class="line">            <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"-l"</span>, argv[arg_idx]))</span><br><span class="line">            &#123; <span class="comment">// 如果是参数-l</span></span><br><span class="line">                long_info = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"-h"</span>, argv[arg_idx]))</span><br><span class="line">            &#123; <span class="comment">// 参数-h</span></span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"usage: -l list all infomation about the file.\n-h for help\nlist all files in the current dirctory if no option\n"</span>);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123; <span class="comment">// 只支持-h -l两个选项</span></span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"ls: invalid option %s\nTry `ls -h' for more information.\n"</span>, argv[arg_idx]);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123; <span class="comment">// ls的路径参数</span></span><br><span class="line">            <span class="keyword">if</span> (arg_path_nr == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                pathname = argv[arg_idx];</span><br><span class="line">                arg_path_nr = <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"ls: only support one path\n"</span>);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        arg_idx++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pathname == <span class="literal">NULL</span>)</span><br><span class="line">    &#123; <span class="comment">// 若只输入了ls 或 ls -l,没有输入操作路径,默认以当前路径的绝对路径为参数.</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="literal">NULL</span> != getcwd(final_path, MAX_PATH_LEN))</span><br><span class="line">        &#123;</span><br><span class="line">            pathname = final_path;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"ls: getcwd for default path failed\n"</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        make_clear_abs_path(pathname, final_path);</span><br><span class="line">        pathname = final_path;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (stat(pathname, &amp;file_stat) == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"ls: cannot access %s: No such file or directory\n"</span>, pathname);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (file_stat.st_filetype == FT_DIRECTORY)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">dir</span> *<span class="title">dir</span> = <span class="title">opendir</span>(<span class="title">pathname</span>);</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">dir_entry</span> *<span class="title">dir_e</span> = <span class="title">NULL</span>;</span></span><br><span class="line">        <span class="keyword">char</span> sub_pathname[MAX_PATH_LEN] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">        <span class="keyword">uint32_t</span> pathname_len = <span class="built_in">strlen</span>(pathname);</span><br><span class="line">        <span class="keyword">uint32_t</span> last_char_idx = pathname_len - <span class="number">1</span>;</span><br><span class="line">        <span class="built_in">memcpy</span>(sub_pathname, pathname, pathname_len);</span><br><span class="line">        <span class="keyword">if</span> (sub_pathname[last_char_idx] != <span class="string">'/'</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            sub_pathname[pathname_len] = <span class="string">'/'</span>;</span><br><span class="line">            pathname_len++;</span><br><span class="line">        &#125;</span><br><span class="line">        rewinddir(dir);</span><br><span class="line">        <span class="keyword">if</span> (long_info)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">char</span> ftype;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"total: %d\n"</span>, file_stat.st_size);</span><br><span class="line">            <span class="keyword">while</span> ((dir_e = readdir(dir)))</span><br><span class="line">            &#123;</span><br><span class="line">                ftype = <span class="string">'d'</span>;</span><br><span class="line">                <span class="keyword">if</span> (dir_e-&gt;f_type == FT_REGULAR)</span><br><span class="line">                &#123;</span><br><span class="line">                    ftype = <span class="string">'-'</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                sub_pathname[pathname_len] = <span class="number">0</span>;</span><br><span class="line">                <span class="built_in">strcat</span>(sub_pathname, dir_e-&gt;filename);</span><br><span class="line">                <span class="built_in">memset</span>(&amp;file_stat, <span class="number">0</span>, <span class="keyword">sizeof</span>(struct stat));</span><br><span class="line">                <span class="keyword">if</span> (stat(sub_pathname, &amp;file_stat) == <span class="number">-1</span>)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="built_in">printf</span>(<span class="string">"ls: cannot access %s: No such file or directory\n"</span>, dir_e-&gt;filename);</span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"%c  %d  %d  %s\n"</span>, ftype, dir_e-&gt;i_no, file_stat.st_size, dir_e-&gt;filename);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">while</span> ((dir_e = readdir(dir)))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"%s "</span>, dir_e-&gt;filename);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        closedir(dir);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (long_info)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"-  %d  %d  %s\n"</span>, file_stat.st_ino, file_stat.st_size, pathname);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, pathname);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="cd"><a href="#cd" class="headerlink" title="cd"></a>cd</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* cd命令的内建函数 */</span></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">buildin_cd</span><span class="params">(<span class="keyword">uint32_t</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (argc &gt; <span class="number">2</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"cd: only support 1 argument!\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 若是只键入cd而无参数,直接返回到根目录. */</span></span><br><span class="line">    <span class="keyword">if</span> (argc == <span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        final_path[<span class="number">0</span>] = <span class="string">'/'</span>;</span><br><span class="line">        final_path[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        make_clear_abs_path(argv[<span class="number">1</span>], final_path);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (chdir(final_path) == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"cd: no such directory %s\n"</span>, final_path);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> final_path;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="mkdir"><a href="#mkdir" class="headerlink" title="mkdir"></a>mkdir</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* mkdir命令内建函数 */</span></span><br><span class="line"><span class="keyword">int32_t</span> buildin_mkdir(<span class="keyword">uint32_t</span> argc, <span class="keyword">char</span> **argv)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int32_t</span> ret = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">if</span> (argc != <span class="number">2</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"mkdir: only support 1 argument!\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        make_clear_abs_path(argv[<span class="number">1</span>], final_path);</span><br><span class="line">        <span class="comment">/* 若创建的不是根目录 */</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">strcmp</span>(<span class="string">"/"</span>, final_path))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (mkdir(final_path) == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                ret = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"mkdir: create directory %s failed.\n"</span>, argv[<span class="number">1</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="rmdir"><a href="#rmdir" class="headerlink" title="rmdir"></a>rmdir</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* rmdir命令内建函数 */</span></span><br><span class="line"><span class="keyword">int32_t</span> buildin_rmdir(<span class="keyword">uint32_t</span> argc, <span class="keyword">char</span> **argv)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int32_t</span> ret = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">if</span> (argc != <span class="number">2</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"rmdir: only support 1 argument!\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        make_clear_abs_path(argv[<span class="number">1</span>], final_path);</span><br><span class="line">        <span class="comment">/* 若删除的不是根目录 */</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">strcmp</span>(<span class="string">"/"</span>, final_path))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (rmdir(final_path) == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                ret = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"rmdir: remove %s failed.\n"</span>, argv[<span class="number">1</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="rm"><a href="#rm" class="headerlink" title="rm"></a>rm</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">/* rm命令内建函数 */</span><br><span class="line">int32_t buildin_rm(uint32_t argc, char **argv)</span><br><span class="line">&#123;</span><br><span class="line">    int32_t ret = -1;</span><br><span class="line">    if (argc != 2)</span><br><span class="line">    &#123;</span><br><span class="line">        printf(&quot;rm: only support 1 argument!\n&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        make_clear_abs_path(argv[1], final_path);</span><br><span class="line">        /* 若删除的不是根目录 */</span><br><span class="line">        if (strcmp(&quot;/&quot;, final_path))</span><br><span class="line">        &#123;</span><br><span class="line">            if (unlink(final_path) == 0)</span><br><span class="line">            &#123;</span><br><span class="line">                ret = 0;</span><br><span class="line">            &#125;</span><br><span class="line">            else</span><br><span class="line">            &#123;</span><br><span class="line">                printf(&quot;rm: delete %s failed.\n&quot;, argv[1]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="ps"><a href="#ps" class="headerlink" title="ps"></a>ps</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* ps命令内建函数 */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">buildin_ps</span><span class="params">(<span class="keyword">uint32_t</span> argc, <span class="keyword">char</span> **argv UNUSED)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (argc != <span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"ps: no argument support!\n"</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ps();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="clear"><a href="#clear" class="headerlink" title="clear"></a>clear</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* clear命令内建函数 */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">buildin_clear</span><span class="params">(<span class="keyword">uint32_t</span> argc, <span class="keyword">char</span> **argv UNUSED)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (argc != <span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"clear: no argument support!\n"</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    clear();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="pwd"><a href="#pwd" class="headerlink" title="pwd"></a>pwd</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* pwd命令的内建函数 */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">buildin_pwd</span><span class="params">(<span class="keyword">uint32_t</span> argc, <span class="keyword">char</span> **argv UNUSED)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (argc != <span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"pwd: no argument support!\n"</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="literal">NULL</span> != getcwd(final_path, MAX_PATH_LEN))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, final_path);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"pwd: get current work directory failed.\n"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的很多对文件和目录操作的命令都是在文件系统中实现的，这里只是对其进一步的封装。</p>
+<p>接下来就要为这些命令提供统一的调用接口，也就是shell拉。</p>
+<h1 id="shell"><a href="#shell" class="headerlink" title="shell"></a>shell</h1><p>shell在执行的时候肯定要对用户的输入进行解析，根据解析结果找到对应的处理程序，然后调用执行，首先上命令解析函数</p>
+<p>该函数主要是对命令进行拆分，根据其拆分标志，一般是空格，将一个个分割好的参数存入argv中。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 分析字符串cmd_str中以token为分隔符的单词,将各单词的指针存入argv数组 */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> int32_t <span class="title">cmd_parse</span><span class="params">(<span class="keyword">char</span> *cmd_str, <span class="keyword">char</span> **argv, <span class="keyword">char</span> token)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    assert(cmd_str != <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">int32_t</span> arg_idx = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (arg_idx &lt; MAX_ARG_NR)</span><br><span class="line">    &#123;</span><br><span class="line">        argv[arg_idx] = <span class="literal">NULL</span>;</span><br><span class="line">        arg_idx++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">char</span> *next = cmd_str;</span><br><span class="line">    <span class="keyword">int32_t</span> argc = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/* 外层循环处理整个命令行 */</span></span><br><span class="line">    <span class="keyword">while</span> (*next)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">/* 去除命令字或参数之间的空格 */</span></span><br><span class="line">        <span class="keyword">while</span> (*next == token)</span><br><span class="line">        &#123;</span><br><span class="line">            next++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">/* 处理最后一个参数后接空格的情况,如"ls dir2 " */</span></span><br><span class="line">        <span class="keyword">if</span> (*next == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        argv[argc] = next;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 内层循环处理命令行中的每个命令字及参数 */</span></span><br><span class="line">        <span class="keyword">while</span> (*next &amp;&amp; *next != token)</span><br><span class="line">        &#123; <span class="comment">// 在字符串结束前找单词分隔符</span></span><br><span class="line">            next++;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 如果未结束(是token字符),使tocken变成0 */</span></span><br><span class="line">        <span class="keyword">if</span> (*next)</span><br><span class="line">        &#123;</span><br><span class="line">            *next++ = <span class="number">0</span>; <span class="comment">// 将token字符替换为字符串结束符0,做为一个单词的结束,并将字符指针next指向下一个字符</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 避免argv数组访问越界,参数过多则返回0 */</span></span><br><span class="line">        <span class="keyword">if</span> (argc &gt; MAX_ARG_NR)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        argc++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> argc;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接下来就上shell拉。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_shell</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    cwd_cache[<span class="number">0</span>] = <span class="string">'/'</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        print_prompt();</span><br><span class="line">        <span class="built_in">memset</span>(final_path, <span class="number">0</span>, MAX_PATH_LEN);</span><br><span class="line">        <span class="built_in">memset</span>(cmd_line, <span class="number">0</span>, MAX_PATH_LEN);</span><br><span class="line">        readline(cmd_line, MAX_PATH_LEN);</span><br><span class="line">        <span class="keyword">if</span> (cmd_line[<span class="number">0</span>] == <span class="number">0</span>)</span><br><span class="line">        &#123; </span><br><span class="line">            <span class="comment">// 若只键入了一个回车</span></span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        argc = <span class="number">-1</span>;</span><br><span class="line">        argc = cmd_parse(cmd_line, argv, <span class="string">' '</span>);</span><br><span class="line">        <span class="keyword">if</span> (argc == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"num of arguments exceed %d\n"</span>, MAX_ARG_NR);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"ls"</span>, argv[<span class="number">0</span>]))</span><br><span class="line">        &#123;</span><br><span class="line">            buildin_ls(argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"cd"</span>, argv[<span class="number">0</span>]))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (buildin_cd(argc, argv) != <span class="literal">NULL</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">memset</span>(cwd_cache, <span class="number">0</span>, MAX_PATH_LEN);</span><br><span class="line">                <span class="built_in">strcpy</span>(cwd_cache, final_path);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"pwd"</span>, argv[<span class="number">0</span>]))</span><br><span class="line">        &#123;</span><br><span class="line">            buildin_pwd(argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"ps"</span>, argv[<span class="number">0</span>]))</span><br><span class="line">        &#123;</span><br><span class="line">            buildin_ps(argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"clear"</span>, argv[<span class="number">0</span>]))</span><br><span class="line">        &#123;</span><br><span class="line">            buildin_clear(argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"mkdir"</span>, argv[<span class="number">0</span>]))</span><br><span class="line">        &#123;</span><br><span class="line">            buildin_mkdir(argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"rmdir"</span>, argv[<span class="number">0</span>]))</span><br><span class="line">        &#123;</span><br><span class="line">            buildin_rmdir(argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(<span class="string">"rm"</span>, argv[<span class="number">0</span>]))</span><br><span class="line">        &#123;</span><br><span class="line">            buildin_rm(argc, argv);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"external command\n"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在上一节中说了，执行这个shell的是init进程fork出的子进程，所以要将这个myshell函数放入init进程中，当fork返回值为0时，就执行myshell<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pid_t</span> pid = fork();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(fork)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> (fork == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        myshell();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这就是init进程目前所做的工作，它是在内核主线程创建之前就已经创建好了的进程。</p>
+<p>接下来就运行一下，享受一下成果。<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/75CmAAFmFD.png?imageslim" alt=""><br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/2Fck56F72A.png?imageslim" alt="mark"></p>
+<p>可以看到确实能进行一定程度上的交互了，但是目前的命令都是内部命令，写死在程序中的，这样想新增命令时非常不方便，所以后面要实现加载用户程序，让shell支持外部命令。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/15/shell/" rel="next" title="十九. fork的原理及实现">
+                <i class="fa fa-chevron-left"></i> 十九. fork的原理及实现
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/15/elf/" rel="prev" title="二十一. elf文件格式解析">
+                二十一. elf文件格式解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.gif" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#路径解析转换"><span class="nav-number">1.</span> <span class="nav-text">路径解析转换</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ls"><span class="nav-number">2.</span> <span class="nav-text">ls</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cd"><span class="nav-number">3.</span> <span class="nav-text">cd</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mkdir"><span class="nav-number">4.</span> <span class="nav-text">mkdir</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rmdir"><span class="nav-number">5.</span> <span class="nav-text">rmdir</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rm"><span class="nav-number">6.</span> <span class="nav-text">rm</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ps"><span class="nav-number">7.</span> <span class="nav-text">ps</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#clear"><span class="nav-number">8.</span> <span class="nav-text">clear</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#pwd"><span class="nav-number">9.</span> <span class="nav-text">pwd</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#shell"><span class="nav-number">10.</span> <span class="nav-text">shell</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
