@@ -115,15 +115,15 @@
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="之前的内容中已经实现过内存分配的功能，但之前的内存管理模块中只是实现了内核空间的内存分配，而且每次分配的空间都是已页为单位，也就是只能分配页的整数倍的空间。已页为单位的内存确实是最利于操作系统管理的，但是当只需要小块内存区域的时候，之前的内存管理模块就无法完成了。所以在这里要完善之前的内存管理模块，使其能够支持小块内存的分配。有了底层的内存管理模块的支撑之后，malloc和free的实现就非常容易">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/f7K8iefkG2.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/GFHj8JBHIe.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/C77IidECHb.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/0k3HHmj4AA.png?imageslim">
-<meta property="og:updated_time" content="2018-05-07T10:58:26.000Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/f7K8iefkG2.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/GFHj8JBHIe.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/C77IidECHb.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/0k3HHmj4AA.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:22:08.448Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="十四. malloc&amp;free的实现">
 <meta name="twitter:description" content="之前的内容中已经实现过内存分配的功能，但之前的内存管理模块中只是实现了内核空间的内存分配，而且每次分配的空间都是已页为单位，也就是只能分配页的整数倍的空间。已页为单位的内存确实是最利于操作系统管理的，但是当只需要小块内存区域的时候，之前的内存管理模块就无法完成了。所以在这里要完善之前的内存管理模块，使其能够支持小块内存的分配。有了底层的内存管理模块的支撑之后，malloc和free的实现就非常容易">
-<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180507/f7K8iefkG2.png?imageslim">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/f7K8iefkG2.png?imageslim">
 
 
 
@@ -391,9 +391,25 @@
                 
               
 
-              <time title="创建时间：2018-05-07 18:58:26" itemprop="dateCreated datePublished" datetime="2018-05-07T18:58:26+08:00">2018-05-07</time>
+              <time title="创建时间：2018-05-07 20:30:00" itemprop="dateCreated datePublished" datetime="2018-05-07T20:30:00+08:00">2018-05-07</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:08" itemprop="dateModified" datetime="2018-12-09T00:22:08+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -447,12 +463,12 @@
 <h1 id="malloc底层原理"><a href="#malloc底层原理" class="headerlink" title="malloc底层原理"></a>malloc底层原理</h1><p>之前的内存管理模块中是通过bitmap对内存进行管理的，bitmap中的每一个bit位就代表一页大小的内存，该位为1时表示这页已经分配出去了。那么对小块内存进行分配的时候，同样需要一个结构来记录这块内存的情况，也就是说，要通过一种结构来对内存的分配与释放进行管理。</p>
 <p>arena是一大块的内存被划分的多个小的内存块的内存仓库。按照内存块的大小，可以划分成不同规格的arena。比如一种arena中全是32byte的内存块，它就只相应32byte以下内存空间的分配。这一整块arena的大小同样是页的整数倍，按照申请内存空间的大小，这个arena可能是1页或者多页。</p>
 <p>按照这种原理，arena就由两部分组成，一是这块内存的元信息，用来描述这个arena中剩余的内存块，二是内存池区域，里面就是多个大小相同的内存块。其结构如下图所示</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180507/f7K8iefkG2.png?imageslim" alt="arena结构"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/f7K8iefkG2.png?imageslim" alt="arena结构"></p>
 <p>一块arena大小的内存总有分配完的时候，也就是该arena中的所有mem_block都分配出去了，那么肯定需要新增一个与之前arena规格相同的arena来满足内存的需求，那么这些相同规格arena之前同样需要一个结构来进行管理，这个结构用来记录arena的规格以及同规格arena中所有空闲内存块链表</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180507/GFHj8JBHIe.png?imageslim" alt="内存块描述符"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/GFHj8JBHIe.png?imageslim" alt="内存块描述符"></p>
 <p>内存块描述符中会将所有同规格arena的空间内存块进行汇总，它相当于所有内存块的大仓库，分配内存的时候经过这个大仓库，找到里面的某个arena，也就是小仓库，最后从这个arena中找到某个空闲的内存块，将其分配出去。这个过程是不是和现实生活中从仓库取物品很类似。</p>
 <p>arena中主要是针对小内存分配的管理，里面的内存块规格最大不会超过1024byte，那么对于超过1024byte的空间如何分配呢？一种可能的情况是将多个内存块合并起来，这些合并的内存块组成这个大空间，但是用这种方式对内存块信息的维护就变的极其麻烦。所以对于大的内存就不进行内存块的划分，它的arena就变成了这个样子</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180507/C77IidECHb.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/C77IidECHb.png?imageslim" alt="mark"></p>
 <p>这里我划分了7种规格的arena，分别为16byte, 32byte, 64byte, …. 1024byte。一个arena一般占用1页也就是4096byte，arena中的元信息在设计中它会占用12byte大小，对于规格为16byte的arena来说，它有(4096 - 12) / 16 = 255个内存块，有4byte的空间被浪费。</p>
 <p>在内存分配的过程中，小于16byte的空间就会采用16byte的arena进行分配，后面同理。</p>
 <h1 id="实现malloc"><a href="#实现malloc" class="headerlink" title="实现malloc"></a>实现malloc</h1><p>说了那么多原理，还是来看看代码实现，从源码中能够更清晰的看出其原理</p>
@@ -466,7 +482,7 @@
 <p>首先判断是内核还是用户进程需要分配空间，确定在相应的内存池中进行分配</p>
 <p>申请的空间大于1024byte的情况，会分配申请内存大小+元信息大小对4096向上取整的页框数，比如说申请的内存大小为4092byte，元信息的大小为12byte，所以总共需要5004byte，也就是说需要2个页框，最后返回的地址要跳过元信息。</p>
 <p>对于小于1024byte的情况，从7种规格的arena中找个分配颗粒与所需大小最接近的arena，比如33byte，就会使用64byte的arena。申请63byte空间，同样会使用64byte的arena。也就是说，即使只需要33byte的空间，实际分配的过程中，还是会占用64byte的内存空间。这种空间的浪费是无法避免的。下面看一下执行的结果</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180507/0k3HHmj4AA.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180507/0k3HHmj4AA.png?imageslim" alt="mark"></p>
 <p>在调用的过程中申请了两块内存空间，第一块空间的大小为33byte，第二块空间的大小为63byte，这两块空间都是使用64byte的arena，因为是第一次申请空间，所以首先会建立64byte的arena，也就是说这两块空间都会使用同一个页框，该页框的首地址为0xc0102000，首先需要跳过元信息的大小为0xc，所以第一块内存的地址就是0xc0102000+0xc， 第二块内存的地址是0xc0102000 + 0xc + 0x40。</p>
 <p>底层的封装已经封装好了，接下来就要通过系统调用，提供对外的接口啦<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc</span><span class="params">(<span class="keyword">uint32_t</span> size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span>*)_syscall1(SYS_MALLOC, size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>系统调用的原理就是根据传递的子功能号去调用相应的中断处理例程，这里的中断处理例程就是上面的sys_malloc这个函数啦。</p>
@@ -596,7 +612,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

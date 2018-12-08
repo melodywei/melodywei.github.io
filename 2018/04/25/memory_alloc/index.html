@@ -115,17 +115,17 @@
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="前面已经准备好了内存池，这里就要正式实现内存的分配了。因为到目前为止，还没有用户进程，所以这里只实现内核中的动态内存分配。 内存分配的过程如下：  在虚拟内存池中申请n个虚拟页 在物理内存池中分配物理页 在页表中添加虚拟地址与物理地址的映射关系  接下来就是一步步完成这三步 申请虚拟页1234567891011121314151617181920212223242526272829// 在虚拟内存">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180425/2JFCg05BJ2.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180425/99GEI7IGI3.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180425/6FECI7J8D4.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180417/Hd12DBhm9h.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180425/3JE65Ig8Ih.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180425/DCggdBdg1g.png?imageslim">
-<meta property="og:updated_time" content="2018-04-25T07:01:08.000Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/2JFCg05BJ2.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/99GEI7IGI3.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/6FECI7J8D4.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180417/Hd12DBhm9h.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/3JE65Ig8Ih.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/DCggdBdg1g.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:22:17.367Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="九. 内核的内存分配">
 <meta name="twitter:description" content="前面已经准备好了内存池，这里就要正式实现内存的分配了。因为到目前为止，还没有用户进程，所以这里只实现内核中的动态内存分配。 内存分配的过程如下：  在虚拟内存池中申请n个虚拟页 在物理内存池中分配物理页 在页表中添加虚拟地址与物理地址的映射关系  接下来就是一步步完成这三步 申请虚拟页1234567891011121314151617181920212223242526272829// 在虚拟内存">
-<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180425/2JFCg05BJ2.png?imageslim">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/2JFCg05BJ2.png?imageslim">
 
 
 
@@ -393,9 +393,25 @@
                 
               
 
-              <time title="创建时间：2018-04-25 15:01:08" itemprop="dateCreated datePublished" datetime="2018-04-25T15:01:08+08:00">2018-04-25</time>
+              <time title="创建时间：2018-04-25 20:30:00" itemprop="dateCreated datePublished" datetime="2018-04-25T20:30:00+08:00">2018-04-25</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:17" itemprop="dateModified" datetime="2018-12-09T00:22:17+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -471,9 +487,9 @@
 <li>最后把低12位作为物理页的页内偏移，加上物理页的物理地址，即为最终的物理地址</li>
 </ol>
 <p>通过这幅图来说明一下</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180425/2JFCg05BJ2.png?imageslim" alt="虚拟地址到物理地址的映射"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/2JFCg05BJ2.png?imageslim" alt="虚拟地址到物理地址的映射"></p>
 <p>想要找到一个虚拟地址对应的PDE地址，那么首先要知道页目录表的地址，然后通过该虚拟地址的高10位，得到它相对于页目录表的偏移，便可以最终得到PDE的地址</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180425/99GEI7IGI3.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/99GEI7IGI3.png?imageslim" alt="mark"></p>
 <p>通过上面的图来说明一下，想要知道0x00c03123的PDE地址，这里假设页目录表的首地址为0xfffff000，0x00c03123的高十位为0x3，而页目录表中，每一个小方框的大小都为4字节，所以最终 <strong>PDE=0xfffff000 + 0x3 * 4</strong></p>
 <p>而当初在规划页表的时候，最后一个页目录项中存储的是页目录表的物理地址。当高20位全为1的时候访问到的就是最后一个页目录项，所以页目录表的物理地址也就为0xfffff000，代码如下</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PDE_IDX(addr) ((addr &amp; 0xffc00000) &gt;&gt; 22)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 得到虚拟地址对应的pde指针</span></span><br><span class="line"><span class="keyword">uint32_t</span> *pde_ptr(<span class="keyword">uint32_t</span> vaddr)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> *pde = (<span class="keyword">uint32_t</span>*)(<span class="number">0xfffff000</span> + PDE_IDX(vaddr) * <span class="number">4</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> pde;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -486,19 +502,19 @@
 <p>下面代码中的计算方式有点区别但是思路是一致的。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PTE_IDX(addr) ((addr &amp; 0x003ff000) &gt;&gt; 12)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 得到虚拟地址对应的pte指针</span></span><br><span class="line"><span class="keyword">uint32_t</span> *pte_ptr(<span class="keyword">uint32_t</span> vaddr)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> *pte = (<span class="keyword">uint32_t</span>*)(<span class="number">0xffc00000</span> + ((vaddr &amp; <span class="number">0xffc00000</span>) &gt;&gt; <span class="number">10</span>) + PTE_IDX(vaddr) * <span class="number">4</span>);</span><br><span class="line">    <span class="comment">// 0xffc00000 + 0x3 &gt;&gt; 10</span></span><br><span class="line">    <span class="keyword">return</span> pte;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这里放一张地址的映射关系图</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180425/6FECI7J8D4.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/6FECI7J8D4.png?imageslim" alt="mark"></p>
 <p>解决了最复杂的PTE和PDE的地址获取问题，下面添加虚拟地址到物理地址的映射关系就简单了</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在页表中添加虚拟地址到物理地址的映射关系</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">page_table_add</span><span class="params">(<span class="keyword">void</span> *_vaddr, <span class="keyword">void</span> *_page_phyaddr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> vaddr = (<span class="keyword">uint32_t</span>)_vaddr;</span><br><span class="line">    <span class="keyword">uint32_t</span> page_phyaddr = (<span class="keyword">uint32_t</span>)_page_phyaddr;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> *pde = pde_ptr((<span class="keyword">uint32_t</span>)vaddr);</span><br><span class="line">    <span class="keyword">uint32_t</span> *pte = pte_ptr((<span class="keyword">uint32_t</span>)vaddr);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在页目录内判断目录项的P位，若为1,表示该表已存在</span></span><br><span class="line">    <span class="keyword">if</span>(*pde &amp; <span class="number">0x01</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 创建页表的时候，pte不应该存在</span></span><br><span class="line">        ASSERT(!(*pte &amp; <span class="number">0x01</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(!(*pte &amp; <span class="number">0x01</span>))</span><br><span class="line">        &#123;</span><br><span class="line">            *pte = page_phyaddr | PG_US_U | PG_RW_W | PG_P_1;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;<span class="comment">// 页目录项不存在，此时先创建页目录项</span></span><br><span class="line">        <span class="keyword">uint32_t</span> pde_phyaddr = (<span class="keyword">uint32_t</span>)palloc(&amp;kernel_pool);</span><br><span class="line"></span><br><span class="line">        *pde = pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1;</span><br><span class="line">        <span class="built_in">memset</span>((<span class="keyword">void</span>*)((<span class="keyword">int</span>)pte &amp; <span class="number">0xfffff000</span>), <span class="number">0</span>, PG_SIZE);</span><br><span class="line"></span><br><span class="line">        ASSERT(!(*pte &amp; <span class="number">0x01</span>));</span><br><span class="line">        *pte = page_phyaddr | PG_US_U | PG_RW_W | PG_P_1;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这里直接对pde或者pte内部的数据赋值就好了，赋值的数据需要根据pde和pte的结构来。直接上结构图</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180417/Hd12DBhm9h.png?imageslim" alt="PDE与PTE的结构图"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180417/Hd12DBhm9h.png?imageslim" alt="PDE与PTE的结构图"></p>
 <p>前二十位是物理地址的高20位，后面的则是一些访问属性。这里不再过多解释</p>
 <h1 id="内存分配接口函数"><a href="#内存分配接口函数" class="headerlink" title="内存分配接口函数"></a>内存分配接口函数</h1><p>函数已经全部封装好了，接下来是对外接口的提供了</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> pool_flags</span><br><span class="line">&#123;</span><br><span class="line">    PF_KERNEL=<span class="number">1</span>,</span><br><span class="line">    PF_USER</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 分配pg_cnt 个页空间</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc_page</span><span class="params">(<span class="keyword">enum</span> pool_flags pf, <span class="keyword">uint32_t</span> pg_cnt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ASSERT(pg_cnt &gt; <span class="number">0</span> &amp;&amp; pg_cnt &lt; <span class="number">3840</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> *vaddr_start = vaddr_get(pf, pg_cnt);</span><br><span class="line">    <span class="keyword">if</span>(vaddr_start == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> vaddr = (<span class="keyword">uint32_t</span>)vaddr_start;</span><br><span class="line">    <span class="keyword">uint32_t</span> cnt = pg_cnt;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pool</span> *<span class="title">mem_pool</span> = <span class="title">pf</span> &amp; <span class="title">PF_KERNEL</span> ? &amp;<span class="title">kernel_pool</span> :</span> &amp;user_pool;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (cnt-- &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">void</span> *page_phyaddr = palloc(mem_pool);</span><br><span class="line">        <span class="keyword">if</span>(page_phyaddr == <span class="literal">NULL</span>)</span><br><span class="line">        &#123;<span class="comment">// 此处分配失败需要释放已申请的虚拟页和物理页</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        page_table_add((<span class="keyword">void</span>*)vaddr, page_phyaddr);</span><br><span class="line">        vaddr += PG_SIZE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> vaddr_start;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在内核物理内存池中申请pg_cnt页内存</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">get_kernel_pages</span><span class="params">(<span class="keyword">uint32_t</span> pg_cnt)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">void</span> *vaddr = malloc_page(PF_KERNEL, pg_cnt);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(vaddr != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">memset</span>(vaddr,<span class="number">0</span>, pg_cnt * PG_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> vaddr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>接下来就在bochs中运行看看申请的空间有没有被写入页表中</p>
 <p>这个是目前内核的内存布局信息，内核物理内存开始地址为0x200000。并且我们申请的内存开始地址是在0xc010000处，这也是内核堆空间的起始地址</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180425/3JE65Ig8Ih.png?imageslim" alt="内存布局信息"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/3JE65Ig8Ih.png?imageslim" alt="内存布局信息"></p>
 <p>在main函数中我申请了三页的内存，这里也确实做了三页的内存映射。</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180425/DCggdBdg1g.png?imageslim" alt="页表信息"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180425/DCggdBdg1g.png?imageslim" alt="页表信息"></p>
 
       
     </div>
@@ -613,7 +629,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

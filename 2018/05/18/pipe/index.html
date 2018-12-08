@@ -115,13 +115,13 @@
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="进程同步看一下上一节写的调用外部shell的方法。 1234567891011121314151617181920memset(final_path, 0, sizeof(final_path));int32_t pid = fork();if (pid)&amp;#123;     while(1);&amp;#125;else&amp;#123;    make_clear_abs_path(argv[0], fin">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180518/9FC1HDLEHL.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180518/FK0E7lbl8F.png?imageslim">
-<meta property="og:updated_time" content="2018-05-18T09:07:18.000Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180518/9FC1HDLEHL.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180518/FK0E7lbl8F.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:22:30.786Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="二十三. 进程同步与进程间通信">
 <meta name="twitter:description" content="进程同步看一下上一节写的调用外部shell的方法。 1234567891011121314151617181920memset(final_path, 0, sizeof(final_path));int32_t pid = fork();if (pid)&amp;#123;     while(1);&amp;#125;else&amp;#123;    make_clear_abs_path(argv[0], fin">
-<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180518/9FC1HDLEHL.png?imageslim">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180518/9FC1HDLEHL.png?imageslim">
 
 
 
@@ -389,9 +389,25 @@
                 
               
 
-              <time title="创建时间：2018-05-18 17:07:18" itemprop="dateCreated datePublished" datetime="2018-05-18T17:07:18+08:00">2018-05-18</time>
+              <time title="创建时间：2018-05-18 22:30:00" itemprop="dateCreated datePublished" datetime="2018-05-18T22:30:00+08:00">2018-05-18</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:30" itemprop="dateModified" datetime="2018-12-09T00:22:30+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -470,9 +486,9 @@
 <p>进程间通信的方式有很多种，有消息队列，共享内存，socket通信，管道等。在这里kernel中就打算实现管道。而且管道命令在linux的shell中使用可以说是非常频繁的。</p>
 <p>管道是文件的一种，(操作系统上文件是一个非常大的概念，像管道，socket，设备等都归属于文件的概念中)只是该文件并不存在与文件系统上，它只存在于内存中。既然管道是属于文件的一种，就要按照文件操作的方式来使用，通过open，close，read，write来使用管道，这应该是约定的一种规范吧。</p>
 <p>管道是数据的一个中转站，当某个进程往管道中写入数据后，该数据就会被另一个进程读取，之后用新的数据覆盖旧数据，既然是一块数据缓存区，就应该有一个大小。但是由于写入的数据大小是不确定的，这块缓存区的大小很难确定下来，一般来说会使用环形缓存区来存储数据，通过生产者消费者模型对这块环形缓冲区的数据进行读写。这个环形缓冲区用两个指针来维护，一个专门负责读，一个专门负责写，当缓冲区数据满时，生产者睡眠并唤醒消费者。缓冲区空时，消费者睡眠，唤醒生产者。</p>
-<p>管道有两端，一端用来读，一端用来写。这个两端的概念实质上是内核为一个管道分配了两个文件描述符，一个负责写，一个负责读。它的模型如下图<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180518/9FC1HDLEHL.png?imageslim" alt=""><br>当然，管道创建出来后，自己写自己读是没有意义的。所以通常的走法是创建一个管道后，fork一个子进程，这个子进程会继承当前进程的所有资源，当然也就包括他打开的管道啦。所以父子进程都能通过管道描述符向管道中读写数据。</p>
+<p>管道有两端，一端用来读，一端用来写。这个两端的概念实质上是内核为一个管道分配了两个文件描述符，一个负责写，一个负责读。它的模型如下图<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180518/9FC1HDLEHL.png?imageslim" alt=""><br>当然，管道创建出来后，自己写自己读是没有意义的。所以通常的走法是创建一个管道后，fork一个子进程，这个子进程会继承当前进程的所有资源，当然也就包括他打开的管道啦。所以父子进程都能通过管道描述符向管道中读写数据。</p>
 <p>管道分为两种，匿名管道和命名管道。匿名管道是创建之后只能通过文件描述符来访问的，此管道只对创建它的进程和其子进程可见，其他进程是访问不到的。命名管道就是可以通过其名称，找到该管道的文件描述符，对所有进程都可见。</p>
-<h2 id="linux中管道的设计"><a href="#linux中管道的设计" class="headerlink" title="linux中管道的设计"></a>linux中管道的设计</h2><p>linux支持的文件系统比较多，包括ext2，ext3，ext4，ntfs等。为了提供统一的接口，linux加了一层中间层VFS(虚拟文件系统)。Linux处理管道时是利用现有的文件结构和VFS中inode共同完成的，并没有为管道提供另外的数据结构。如下图所示<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180518/FK0E7lbl8F.png?imageslim" alt=""><br>在图中的文件结构中，f_inode执行VFS中的inode，该inode指向1一个页框大小的内存区域，也就是说linux中管道的缓冲区大小为4096byte，f_op指向操作方法，对于不同的操作对象提供不同的操作方法，对于管道来说，f_op会指向pipe_read或pipe_write方法。</p>
+<h2 id="linux中管道的设计"><a href="#linux中管道的设计" class="headerlink" title="linux中管道的设计"></a>linux中管道的设计</h2><p>linux支持的文件系统比较多，包括ext2，ext3，ext4，ntfs等。为了提供统一的接口，linux加了一层中间层VFS(虚拟文件系统)。Linux处理管道时是利用现有的文件结构和VFS中inode共同完成的，并没有为管道提供另外的数据结构。如下图所示<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180518/FK0E7lbl8F.png?imageslim" alt=""><br>在图中的文件结构中，f_inode执行VFS中的inode，该inode指向1一个页框大小的内存区域，也就是说linux中管道的缓冲区大小为4096byte，f_op指向操作方法，对于不同的操作对象提供不同的操作方法，对于管道来说，f_op会指向pipe_read或pipe_write方法。</p>
 <h2 id="管道的实现"><a href="#管道的实现" class="headerlink" title="管道的实现"></a>管道的实现</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 判断文件描述符local_fd是否是管道 */</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">is_pipe</span><span class="params">(<span class="keyword">uint32_t</span> local_fd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> global_fd = fd_local2global(local_fd);</span><br><span class="line">    <span class="keyword">return</span> file_table[global_fd].fd_flag == PIPE_FLAG;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 创建管道,成功返回0,失败返回-1 */</span></span><br><span class="line"><span class="keyword">int32_t</span> sys_pipe(<span class="keyword">int32_t</span> pipefd[<span class="number">2</span>])</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int32_t</span> global_fd = get_free_slot_in_global();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 申请一页内核内存做环形缓冲区 */</span></span><br><span class="line">    file_table[global_fd].fd_inode = get_kernel_pages(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 初始化环形缓冲区 */</span></span><br><span class="line">    ioqueue_init((struct ioqueue *)file_table[global_fd].fd_inode);</span><br><span class="line">    <span class="keyword">if</span> (file_table[global_fd].fd_inode == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 将fd_flag复用为管道标志 */</span></span><br><span class="line">    file_table[global_fd].fd_flag = PIPE_FLAG;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 将fd_pos复用为管道打开数 */</span></span><br><span class="line">    file_table[global_fd].fd_pos = <span class="number">2</span>;</span><br><span class="line">    pipefd[<span class="number">0</span>] = pcb_fd_install(global_fd);</span><br><span class="line">    pipefd[<span class="number">1</span>] = pcb_fd_install(global_fd);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>从管道中读数据<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 从管道中读数据 */</span></span><br><span class="line"><span class="keyword">uint32_t</span> pipe_read(<span class="keyword">int32_t</span> fd, <span class="keyword">void</span> *buf, <span class="keyword">uint32_t</span> count)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">char</span> *buffer = buf;</span><br><span class="line">    <span class="keyword">uint32_t</span> bytes_read = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">uint32_t</span> global_fd = fd_local2global(fd);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 获取管道的环形缓冲区 */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ioqueue</span> *<span class="title">ioq</span> = (<span class="title">struct</span> <span class="title">ioqueue</span> *)<span class="title">file_table</span>[<span class="title">global_fd</span>].<span class="title">fd_inode</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 选择较小的数据读取量,避免阻塞 */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> ioq_len = ioq_length(ioq);</span><br><span class="line">    <span class="keyword">uint32_t</span> size = ioq_len &gt; count ? count : ioq_len;</span><br><span class="line">    <span class="keyword">while</span> (bytes_read &lt; size)</span><br><span class="line">    &#123;</span><br><span class="line">        *buffer = ioq_getchar(ioq);</span><br><span class="line">        ++bytes_read;</span><br><span class="line">        ++buffer++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> bytes_read;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>往管道写数据<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 往管道中写数据 */</span></span><br><span class="line"><span class="keyword">uint32_t</span> pipe_write(<span class="keyword">int32_t</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *buf, <span class="keyword">uint32_t</span> count)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> bytes_write = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">uint32_t</span> global_fd = fd_local2global(fd);</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">ioqueue</span> *<span class="title">ioq</span> = (<span class="title">struct</span> <span class="title">ioqueue</span> *)<span class="title">file_table</span>[<span class="title">global_fd</span>].<span class="title">fd_inode</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 选择较小的数据写入量,避免阻塞 */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> ioq_left = bufsize - ioq_length(ioq);</span><br><span class="line">    <span class="keyword">uint32_t</span> size = ioq_left &gt; count ? count : ioq_left;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *buffer = buf;</span><br><span class="line">    <span class="keyword">while</span> (bytes_write &lt; size)</span><br><span class="line">    &#123;</span><br><span class="line">        ioq_putchar(ioq, *buffer);</span><br><span class="line">        bytes_write++;</span><br><span class="line">        buffer++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> bytes_write;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
@@ -522,7 +538,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/12/08/tcp1/" rel="prev" title="Unix网络编程(一、简单回显服务器)">
+              <a href="/2018/12/01/tcp1/" rel="prev" title="Unix网络编程(一、简单回显服务器)">
                 Unix网络编程(一、简单回显服务器) <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -596,7 +612,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="配置要求一台linux操作系统的机器即可，最好是32位的。因为我们实现的小kernel是32位的，在64的机器上进行编译和链接可能会出现某些问题。笔者这里使用的是Ubuntu16.4 环境配置bochs安装与配置安装我们自制的操作系统也是运行在一个虚拟机中的，这里我们用的是bochs，bochs本身也是基于x86架构的，这也是我之前说我们的小kernel也是32位的原因bochs下载地址  点击链">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一. bochs环境部署">
+<meta property="og:url" content="https://modifying.github.io/2018/04/09/bochs_deploy/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="配置要求一台linux操作系统的机器即可，最好是32位的。因为我们实现的小kernel是32位的，在64的机器上进行编译和链接可能会出现某些问题。笔者这里使用的是Ubuntu16.4 环境配置bochs安装与配置安装我们自制的操作系统也是运行在一个虚拟机中的，这里我们用的是bochs，bochs本身也是基于x86架构的，这也是我之前说我们的小kernel也是32位的原因bochs下载地址  点击链">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/5gkkHc93Im.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/B63DCAgEG5.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/kK6ciCADEi.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180409/j1K7eik88I.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/bHkDl7dLLi.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/D8bgKJciJJ.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/cG1E52jj2F.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/laKCC319C6.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/m1FHEGhm82.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/ffKH3L8Lm3.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/m2ED2hdJ77.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/l1BJ1LjmA4.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/2cbA07A8I7.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:24:37.582Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一. bochs环境部署">
+<meta name="twitter:description" content="配置要求一台linux操作系统的机器即可，最好是32位的。因为我们实现的小kernel是32位的，在64的机器上进行编译和链接可能会出现某些问题。笔者这里使用的是Ubuntu16.4 环境配置bochs安装与配置安装我们自制的操作系统也是运行在一个虚拟机中的，这里我们用的是bochs，bochs本身也是基于x86架构的，这也是我之前说我们的小kernel也是32位的原因bochs下载地址  点击链">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/5gkkHc93Im.png?imageslim">
+
+
+
+
+
+
+  <link rel="canonical" href="https://modifying.github.io/2018/04/09/bochs_deploy/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>一. bochs环境部署 | melodyのblog</title>
+  
+
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?2fa2044c78f4a75b300904570ea19f8f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/09/bochs_deploy/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一. bochs环境部署
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-09 17:00:00" itemprop="dateCreated datePublished" datetime="2018-04-09T17:00:00+08:00">2018-04-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:24:37" itemprop="dateModified" datetime="2018-12-09T00:24:37+08:00">2018-12-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="配置要求"><a href="#配置要求" class="headerlink" title="配置要求"></a>配置要求</h1><p>一台linux操作系统的机器即可，最好是32位的。因为我们实现的小kernel是32位的，在64的机器上进行编译和链接可能会出现某些问题。笔者这里使用的是Ubuntu16.4</p>
+<h1 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h1><h2 id="bochs安装与配置"><a href="#bochs安装与配置" class="headerlink" title="bochs安装与配置"></a>bochs安装与配置</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>我们自制的操作系统也是运行在一个虚拟机中的，这里我们用的是bochs，bochs本身也是基于x86架构的，这也是我之前说我们的小kernel也是32位的原因<br><a href="https://sourceforge.net/projects/bochs/files/bochs/" target="_blank" rel="noopener">bochs下载地址</a> </p>
+<p>点击链接之后你会看到如下界面<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/5gkkHc93Im.png?imageslim" alt="bochs版本"></p>
+<p>我是使用的最新版本2.6.9的，大家也可以和我选择一样的版本</p>
+<p>进入2.6.9版本的链接之后大家应该会看到如下界面<img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/B63DCAgEG5.png?imageslim" alt="mark"></p>
+<p>大家下载我标箭头的文件到你的虚拟机上即可。</p>
+<p>其实我们也可以通过<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install bochs</span><br></pre></td></tr></table></figure></p>
+<p>这个命令进行安装，我不用这个方法安装的原因是安装之后的bochs文件比较分散，造成配置时比较麻烦，自己下载的文件进行安装时配置文件都在一起，管理起来方便</p>
+<p>好了，文件下载好了之后<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf bochs-2.6.9.tar.gz</span><br></pre></td></tr></table></figure></p>
+<p>解压之后的文件如图<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/kK6ciCADEi.png?imageslim" alt="mark"></p>
+<p>进入到bochs-2.6.9的目录中，输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/home/ba/bochs --enable-debugger --enable-disasm --enable-iodebug --enable-iodebug --enable-x86-debugger --with-x --with-x11</span><br></pre></td></tr></table></figure></p>
+<p>prefix中的路径请换成自己对应的安装路径</p>
+<p>接下来输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make</span><br></pre></td></tr></table></figure></p>
+<p>一段时间之后可能会出现如下错误</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180409/j1K7eik88I.png?imageslim" alt="mark"></p>
+<p>因为我这里是一台全新的虚拟机，有许多库都没有安装，可能你们不会出现，如果出现了这个错误之后，安装x11的lib库即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install libx11-dev</span><br></pre></td></tr></table></figure>
+<p>继续make，出现如下错误</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/bHkDl7dLLi.png?imageslim" alt="mark"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libxrandr-dev</span><br></pre></td></tr></table></figure>
+<p>继续make</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/D8bgKJciJJ.png?imageslim" alt="mark"></p>
+<p>看到这个就说明离成功只有一步之遥了，哈哈</p>
+<p>在之前的配置中加上libs=’-lx11’，完整的配置如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/home/ba/bochs --enable-debugger --enable-disasm --enable-iodebug --enable-iodebug --enable-x86-debugger --with-x --with-x11 libs=&apos;-lx11&apos;</span><br></pre></td></tr></table></figure>
+<p>大家不要忘了把prefix的路径改为自己想安装的路径，接下来make。可以看到没有错误提示了。如果大家出行其他错误可以自行百度。</p>
+<p>下一步<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/cG1E52jj2F.png?imageslim" alt="mark"></p>
+<p>大家可以看看自己的安装目录下是否出现这个文件夹，安装目录参考自己配置文件中填写的路径</p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>安装好了bochs之后我们要对它进行配置，这个配置大家可以参考安装目录下的bochsrc-sample.txt，该文件的路径在bochs目录下的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">share/doc/bochs/bochsrc-sample.txt</span><br></pre></td></tr></table></figure></p>
+<p>因为bochs在运行的时候要加载我们的配置文件，这个配置文件需要我们自己指定，所以我把配置文件放在了bochs目录下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">cd bochs</span><br><span class="line">vim bochsrc.disk</span><br><span class="line"></span><br><span class="line">// 配置如下</span><br><span class="line">＃首先设置 Bochs 在运行过程中能够使用的内存，本例为 32MB。</span><br><span class="line">＃关键字为 megs</span><br><span class="line">megs 32</span><br><span class="line"></span><br><span class="line">＃设置对应真实机器的 BIOS 和 VGA BIOS 。</span><br><span class="line">＃对应两个关键字为 ： romimage 和 vgaromimage</span><br><span class="line">romimage: file＝/home/ba/bochs/share/bochs/BIOS-bochs-latest</span><br><span class="line">vgaromimage: file＝/home/ba/bochs/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line"></span><br><span class="line">#选择启动盘符</span><br><span class="line">boot: disk  #从硬盘启动</span><br><span class="line"></span><br><span class="line"># 设置日志文件的输入位置</span><br><span class="line">log: bochs.out</span><br><span class="line"></span><br><span class="line"># 关闭鼠标，打开键盘</span><br><span class="line">mouse: enabled=0</span><br><span class="line">keyboard: keymap=/home/ba/bochs/share/bochs/keymaps/x11-pc-us.map</span><br><span class="line"></span><br><span class="line"># 设置硬盘</span><br><span class="line">ata0: enabled=1,ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14</span><br></pre></td></tr></table></figure></p>
+<p>大家在写配置文件的时候一定要把这些路径写成绝对路径，不要使用相对路径，因为bochs不认相对路径</p>
+<p>配置文件写完了，那我们运行一下bochs试试， 看看是什么样子</p>
+<p>在bochs的目录下输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/bochs</span><br></pre></td></tr></table></figure></p>
+<p>接下来就会看到如下界面</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/laKCC319C6.png?imageslim" alt="mark"></p>
+<p>可以看到默认的选项是2，要求我们输入配置文件的名称，此时输入bochsrc.disk即可，也就是以前我们写的配置文件的名称。</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/m1FHEGhm82.png?imageslim" alt="mark"></p>
+<p>在我们输入配置文件按下回车之后可以看到，报了一个PANIC级别的错误，意思是我们没有启动盘，因为bochs是模拟的操作系统进行运行，此时我们还没有启动盘，所以它不知道从哪里开始运行，接下来我们就开始创建启动盘</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/ffKH3L8Lm3.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/m2ED2hdJ77.png?imageslim" alt="mark"></p>
+<p>图中需要我们输入的地方我用红色的方框标记出来了，60代表该硬盘的大小为60M，hd60M.img是我给改硬盘取得名字，最后一行用绿色标记的是我们需要加入到配置文件中的，这是我们硬盘配置好之后，bochs给我们自动生成的硬盘信息，接下来在配置文件的最后一行加上该硬盘的信息</p>
+<p>完整的配置如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">＃关键字为 megs</span><br><span class="line">megs 32</span><br><span class="line"></span><br><span class="line">＃设置对应真实机器的 BIOS 和 VGA BIOS 。</span><br><span class="line">＃对应两个关键字为 ： romimage 和 vgaromimage</span><br><span class="line">romimage: file＝/home/ba/bochs/share/bochs/BIOS-bochs-latest</span><br><span class="line">vgaromimage: file＝/home/ba/bochs/share/bochs/VGABIOS-lgpl-latest</span><br><span class="line"></span><br><span class="line">#选择启动盘符</span><br><span class="line">boot: disk  #从硬盘启动</span><br><span class="line"></span><br><span class="line"># 设置日志文件的输入位置</span><br><span class="line">log: bochs.out</span><br><span class="line"></span><br><span class="line"># 关闭鼠标，打开键盘</span><br><span class="line">mouse: enabled=0</span><br><span class="line">keyboard: keymap=/home/ba/bochs/share/bochs/keymaps/x11-pc-us.map</span><br><span class="line"></span><br><span class="line"># 设置硬盘</span><br><span class="line">ata0: enabled=1,ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14</span><br><span class="line"></span><br><span class="line"># 启动盘信息</span><br><span class="line">ata0-master: type=disk, path=&quot;hd60M.img&quot;, mode=flat</span><br></pre></td></tr></table></figure>
+<p>硬盘信息配置好了之后我们初步的配置就已经搞定了，接下来我们在此启动一下试试<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/bochs -f bochsrc.disk</span><br></pre></td></tr></table></figure></p>
+<p>通过-f 可以直接指定我们的配置文件的名称，如果嫌麻烦，每次必须进入bochs文件下，都要输入这么多字的话，可以直接用别名来代替</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line"></span><br><span class="line">alias bochs=&apos;/home/ba/bochs/bin/bochs -f /home/ba/bochs/bochsrc.disk&apos;</span><br><span class="line"></span><br><span class="line">source .bashrc</span><br></pre></td></tr></table></figure>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/l1BJ1LjmA4.png?imageslim" alt="mark"></p>
+<p>当然，路径得改成你们自己的。接下来我们就可以在任意路径下输入bochs运行我们的虚拟机啦，此时如果你想运行看看结果的话，大概就是这样吧</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/2cbA07A8I7.png?imageslim" alt="mark"></p>
+<p>咳咳，这样其实说明一切都准备好了，属于正常现象，如果不是这样，可能您需要回头再看看自己是不是哪里配置出现了问题。</p>
+<p>出现这用错误的原因是因为我们现在的硬盘还只是一个空的硬盘，没有任何数据，又如何能够运行呢，从图上可以看到，CPU一下就跑没影了。在我们平时开机的时候，是不是都要通过BIOS引导，进行硬件，内存的各项检测之后，再将我们的操作系统从硬盘上唤醒。此时操作系统才接管了我们的电脑。我们的配置讲完了，关于主引导的编写可能要等我研究透了之后再和大家分享啦</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/29/deque/" rel="next" title="从零开始，打造自己的STL(五、deque)">
+                <i class="fa fa-chevron-left"></i> 从零开始，打造自己的STL(五、deque)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/09/mbr/" rel="prev" title="二. 编写mbr，让机器启动起来">
+                二. 编写mbr，让机器启动起来 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/melodywei" title="GitHub &rarr; https://github.com/melodywei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:melodywei97@gmail.com" title="E-Mail &rarr; mailto:melodywei97@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#配置要求"><span class="nav-number">1.</span> <span class="nav-text">配置要求</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#环境配置"><span class="nav-number">2.</span> <span class="nav-text">环境配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#bochs安装与配置"><span class="nav-number">2.1.</span> <span class="nav-text">bochs安装与配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">2.1.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置"><span class="nav-number">2.1.2.</span> <span class="nav-text">配置</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

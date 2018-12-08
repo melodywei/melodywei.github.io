@@ -341,7 +341,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/thread/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/12/filesystem2/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -361,7 +361,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/08/thread/" class="post-title-link" itemprop="https://modifying.github.io/index.html">十. 内核线程</a>
+                <a href="/2018/05/12/filesystem2/" class="post-title-link" itemprop="https://modifying.github.io/index.html">十六. 文件系统二(创建文件系统)</a>
               
             
           </h1>
@@ -386,9 +386,25 @@
                 
               
 
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+              <time title="创建时间：2018-05-12 20:30:00" itemprop="dateCreated datePublished" datetime="2018-05-12T20:30:00+08:00">2018-05-12</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:21:44" itemprop="dateModified" datetime="2018-12-09T00:21:44+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -440,13 +456,13 @@
       
         
           
-          实现线程函数观察一下这段c语言代码
-123456789101112void threadFunc(void *arg)&#123;	printf("thread function\n");&#125;int main()&#123;	printf("main function\n");		_begi
+          在前面一节中介绍了文件系统的基本概念，接下来就要准备开始实现我们的文件系统，下面是为管理文件系统提供的几个基础数据结构。
+超级块的结构1234567891011121314151617181920212223/* 超级块 */struct super_block&#123;    uint32_t 
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/thread/#more" rel="contents">
+              <a class="btn" href="/2018/05/12/filesystem2/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -506,7 +522,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/vector/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/03/20/alloc/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -526,7 +542,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/08/vector/" class="post-title-link" itemprop="https://modifying.github.io/index.html">从零开始，打造自己的STL(二、vector)</a>
+                <a href="/2018/03/20/alloc/" class="post-title-link" itemprop="https://modifying.github.io/index.html">从零开始，打造自己的STL(三、alloc)</a>
               
             
           </h1>
@@ -551,9 +567,25 @@
                 
               
 
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+              <time title="创建时间：2018-03-20 22:30:00" itemprop="dateCreated datePublished" datetime="2018-03-20T22:30:00+08:00">2018-03-20</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:25:50" itemprop="dateModified" datetime="2018-12-09T00:25:50+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -605,12 +637,14 @@
       
         
           
-          vector的内存布局以及操作方式与array非常的类似，都是一段连续的内存空间。两者之间唯一的差距就是空间运用的灵活性。array的空间在配置好了之后就无法更改，它所存放的数据量是固定的，一但空间不够用之后需要重新配置一块更大的空间。vector则不然，它的内存空间会随着元素的加入自动扩充新的空间
+          简述在stl中，所有的内存分配与释放都是交由allocator来实现的。在大部分情况下，我们都接触不到这里面的内容，因为它一直是隐藏在幕后悄悄的工作。  
+当然如果对于内存分配有特殊的要求的话，STL也提供了接口供我们使用自己的分配器  
+比如在vector的定义上1234template &lt;
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/vector/#more" rel="contents">
+              <a class="btn" href="/2018/03/20/alloc/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -670,7 +704,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/syscall/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/16/exec/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -690,7 +724,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/08/syscall/" class="post-title-link" itemprop="https://modifying.github.io/index.html">十三. 实现系统调用</a>
+                <a href="/2018/05/16/exec/" class="post-title-link" itemprop="https://modifying.github.io/index.html">二十二. 让shell支持外部命令</a>
               
             
           </h1>
@@ -715,9 +749,25 @@
                 
               
 
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+              <time title="创建时间：2018-05-16 22:30:00" itemprop="dateCreated datePublished" datetime="2018-05-16T22:30:00+08:00">2018-05-16</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:21:33" itemprop="dateModified" datetime="2018-12-09T00:21:33+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -769,14 +819,13 @@
       
         
           
-          系统调用简介关于系统调用前面有过简单的介绍，这里将真正实现系统调用
-现代的操作系统中，用户的权限是有限的，它不能随意的访问系统中的资源。操作系统屏蔽了用户直接访问硬件的能力，这样做的原因主要是为了安全考虑。
-但是如果我们想控制显卡打印字符怎么呢，那就需要通过操作系统提供的接口来完成了，我们调用操作系
+          exec在linux的bash shell中，执行外部命令时，该shell会fork一个子进程，这个子进程调用exec从磁盘上加载外部命令对应的程序。这是exec的一个应用。通过它的应用来看原理
+exec会把一个可执行文件的绝对路径作为参数，把当前正在运行的用户进程的进程体用该可执行文件的进程体替换
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/syscall/#more" rel="contents">
+              <a class="btn" href="/2018/05/16/exec/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -836,7 +885,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/tcp1/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/08/filesystem/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -856,7 +905,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/08/tcp1/" class="post-title-link" itemprop="https://modifying.github.io/index.html">Unix网络编程(一、简单回显服务器)</a>
+                <a href="/2018/05/08/filesystem/" class="post-title-link" itemprop="https://modifying.github.io/index.html">十五. 文件系统一(文件系统的基本概念)</a>
               
             
           </h1>
@@ -881,177 +930,25 @@
                 
               
 
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+              <time title="创建时间：2018-05-08 20:30:00" itemprop="dateCreated datePublished" datetime="2018-05-08T20:30:00+08:00">2018-05-08</time>
             
 
             
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/socket/" itemprop="url" rel="index"><span itemprop="name">socket</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          socket APIsocket1int socket(int domain, int type, int protocol);
-功能：打开一个socket返回值：成功返回对应的文件描述符，否则为-1参数： 
-
-family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
-
-          ...
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/tcp1/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/sync/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="melody">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="melodyのblog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/08/sync/" class="post-title-link" itemprop="https://modifying.github.io/index.html">十一. 线程同步</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:21:38" itemprop="dateModified" datetime="2018-12-09T00:21:38+08:00">2018-12-09</time>
               
-
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
-            
-
             
           </span>
 
@@ -1103,14 +1000,13 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
       
         
           
-          乱序输出前面完成了多线程之后，那么肯定会涉及到线程的同步问题。因为线程的执行是随机的，乱序的。虽然我们这个小kernel实现的调度器算法比较简陋，它的随机性没那么强，但是每次进行线程切换的时候，还是有可能产生问题。并且问题已经产生了。
-
-1234567891011121314151617181920
+          磁盘的基础概念扇区：它是磁盘读写的基本单位。在我们个人的pc上，他的大小通常为512byte
+块：在windows中，称为簇。一个块由多个扇区组成，磁盘在进行读写数据的时候，不可能有一扇区的数据就读或写一次，而是等数据累计到一定量后，在统一进行读写，而这个数据量就叫块。在对磁盘进行格式化分区的时候可
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/sync/#more" rel="contents">
+              <a class="btn" href="/2018/05/08/filesystem/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1170,7 +1066,7 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/synopsis /">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/22/interrupt/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -1190,7 +1086,7 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/08/synopsis /" class="post-title-link" itemprop="https://modifying.github.io/index.html">从零开始，打造自己的STL(一、简述)</a>
+                <a href="/2018/04/22/interrupt/" class="post-title-link" itemprop="https://modifying.github.io/index.html">七. 中断</a>
               
             
           </h1>
@@ -1215,174 +1111,25 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
                 
               
 
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+              <time title="创建时间：2018-04-22 21:00:00" itemprop="dateCreated datePublished" datetime="2018-04-22T21:00:00+08:00">2018-04-22</time>
             
 
             
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/STL/" itemprop="url" rel="index"><span itemprop="name">STL</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          简介对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。
-既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，
-          ...
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/synopsis /#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/shell1/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="melody">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="melodyのblog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/08/shell1/" class="post-title-link" itemprop="https://modifying.github.io/index.html">二十. 内建shell的实现</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:02" itemprop="dateModified" datetime="2018-12-09T00:22:02+08:00">2018-12-09</time>
               
-
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
-            
-
             
           </span>
 
@@ -1434,14 +1181,13 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
       
         
           
-          路径解析转换路径有绝对路径和相对路径之分，在平常使用linux的过程中，我们在输入命令和参数的时候，往往使用的都是相对路径。相对路径是基于当前的工作路径的出的。
-当前工作路径 + 相对路径 = 绝对路径
-比如说当前工作路径为 /home/work 此时输入 ls file，那么file所在的绝对路径
+          简介中断是指CPU获知了计算机中发生的某些事，CPU暂停正在执行的程序，转而去执行处理该事件的程序，当这段程序执行完了之后，CPU继续执行刚才的程序。
+通过中断可以极大的提高CPU的执行效率，如果没有中断，在处理器与外部设备通信时，他必须在向该设备发送指令后进入忙等待，反复轮询该设备是否就绪，这样就
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/shell1/#more" rel="contents">
+              <a class="btn" href="/2018/04/22/interrupt/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1501,7 +1247,7 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/stack/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/09/mbr/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -1521,7 +1267,7 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/08/stack/" class="post-title-link" itemprop="https://modifying.github.io/index.html">从零开始，打造自己的STL(六、stack)</a>
+                <a href="/2018/04/09/mbr/" class="post-title-link" itemprop="https://modifying.github.io/index.html">二. 编写mbr，让机器启动起来</a>
               
             
           </h1>
@@ -1546,174 +1292,25 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
                 
               
 
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+              <time title="创建时间：2018-04-09 19:00:00" itemprop="dateCreated datePublished" datetime="2018-04-09T19:00:00+08:00">2018-04-09</time>
             
 
             
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/STL/" itemprop="url" rel="index"><span itemprop="name">STL</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          前面一章中介绍了deque，除了 C++11 标准中的 array 和 forward_list 之外，序列式容器就已经全部介绍完了，这一部分开始就准备介绍容器适配器。容器适配器相较于容器来说，更加的简单。因为容器适配器里面所有的接口都是对容器内部方法的调用。可以把他们之间的关系当成组合关系。
-12
-          ...
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/stack/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/shell/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="melody">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="melodyのblog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/08/shell/" class="post-title-link" itemprop="https://modifying.github.io/index.html">十九. fork的原理及实现</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
               
 
               
                 
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:12" itemprop="dateModified" datetime="2018-12-09T00:22:12+08:00">2018-12-09</time>
               
-
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
-            
-
             
           </span>
 
@@ -1765,13 +1362,14 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
       
         
           
-          fork的原理先通过下面这段代码简单的介绍一下fork这个函数，了解一下它的功能
-123456789101112131415161718192021#include &lt;unistd.h&gt;#include &lt;stdio.h&gt;int main()&#123;    int pid
+          mbr简介大家都知道，在我们按下电脑电源的时候，首先启动的BIOS(基本输入输出系统)，那么BIOS又是如何被启动的呢，谁来唤醒他呢，它又在何处运行呢。要了解这些的话，首先得介绍一下我们实模式的内存布局
+实模式的内存布局
+图中的内容我们现在只需要关注红色框出来的地方，可以看到BIOS的入口地址处只有
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/shell/#more" rel="contents">
+              <a class="btn" href="/2018/04/09/mbr/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1831,7 +1429,7 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/queue/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/17/protectedmode2/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -1851,7 +1449,7 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/08/queue/" class="post-title-link" itemprop="https://modifying.github.io/index.html">从零开始，打造自己的STL(七、queue)</a>
+                <a href="/2018/04/17/protectedmode2/" class="post-title-link" itemprop="https://modifying.github.io/index.html">四. 获取内存容量</a>
               
             
           </h1>
@@ -1876,9 +1474,209 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
                 
               
 
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+              <time title="创建时间：2018-04-17 20:00:00" itemprop="dateCreated datePublished" datetime="2018-04-17T20:00:00+08:00">2018-04-17</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:42" itemprop="dateModified" datetime="2018-12-09T00:22:42+08:00">2018-12-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          前言在前面一篇文章中介绍了进入保护模式的方法：
+
+打开A20
+加载gdt
+将控制寄存器cr0的pe位置1通过这三步成功的进入到保护模式下，但是在进入保护模式之前，还需要对进行内存的检测工作，启动分页机制等等，最后还要将内核加载到内存当中。这些是之前没有完成的，接下来就要完成这些进入到保护模式之前的准
+          ...
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/04/17/protectedmode2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/22/queue/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/04/22/queue/" class="post-title-link" itemprop="https://modifying.github.io/index.html">从零开始，打造自己的STL(七、queue)</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-22 23:30:00" itemprop="dateCreated datePublished" datetime="2018-04-22T23:30:00+08:00">2018-04-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:25:05" itemprop="dateModified" datetime="2018-12-09T00:25:05+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -1938,7 +1736,370 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/queue/#more" rel="contents">
+              <a class="btn" href="/2018/04/22/queue/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/22/stack/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/04/22/stack/" class="post-title-link" itemprop="https://modifying.github.io/index.html">从零开始，打造自己的STL(六、stack)</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-22 22:30:00" itemprop="dateCreated datePublished" datetime="2018-04-22T22:30:00+08:00">2018-04-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:25:09" itemprop="dateModified" datetime="2018-12-09T00:25:09+08:00">2018-12-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/STL/" itemprop="url" rel="index"><span itemprop="name">STL</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          前面一章中介绍了deque，除了 C++11 标准中的 array 和 forward_list 之外，序列式容器就已经全部介绍完了，这一部分开始就准备介绍容器适配器。容器适配器相较于容器来说，更加的简单。因为容器适配器里面所有的接口都是对容器内部方法的调用。可以把他们之间的关系当成组合关系。
+12
+          ...
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/04/22/stack/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/30/sync/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/04/30/sync/" class="post-title-link" itemprop="https://modifying.github.io/index.html">十一. 线程同步</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-04-30 21:30:00" itemprop="dateCreated datePublished" datetime="2018-04-30T21:30:00+08:00">2018-04-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:55" itemprop="dateModified" datetime="2018-12-09T00:22:55+08:00">2018-12-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          乱序输出前面完成了多线程之后，那么肯定会涉及到线程的同步问题。因为线程的执行是随机的，乱序的。虽然我们这个小kernel实现的调度器算法比较简陋，它的随机性没那么强，但是每次进行线程切换的时候，还是有可能产生问题。并且问题已经产生了。
+
+1234567891011121314151617181920
+          ...
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/04/30/sync/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -2032,7 +2193,7 @@ family指明了协议簇，通常AF_INET、AF_INET6、AF_LOCAL等；
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

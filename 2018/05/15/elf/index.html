@@ -115,19 +115,19 @@
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="elf文件格式我们的程序是通过gcc编译的，在linux下，gcc编译出来的可执行文件是elf格式的二进制文件。那么肯定要elf文件进行解析才能正确的得到进程可执行数据的位置。 下面介绍一下elf格式的几个基本概念 一个程序中最重要的部分是段和节，他们是真正的程序体，存储程序执行所需要的数据，程序中有很多段，常见的有代码段和数据段，段是由节组成的。多个节经过链接之后被合并成一个段。 段和节的信息用">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/K837jihA1C.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/LE444K0JJJ.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/3AEj89Ic8m.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/hLB70846l6.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/lC3HIhJJiB.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/6152bkkDBF.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/EEDEf6KC03.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/AfeI0IbehF.png?imageslim">
-<meta property="og:updated_time" content="2018-05-15T10:48:48.000Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/K837jihA1C.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/LE444K0JJJ.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/3AEj89Ic8m.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/hLB70846l6.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/lC3HIhJJiB.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/6152bkkDBF.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/EEDEf6KC03.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/AfeI0IbehF.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:21:28.967Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="二十一. elf文件格式解析">
 <meta name="twitter:description" content="elf文件格式我们的程序是通过gcc编译的，在linux下，gcc编译出来的可执行文件是elf格式的二进制文件。那么肯定要elf文件进行解析才能正确的得到进程可执行数据的位置。 下面介绍一下elf格式的几个基本概念 一个程序中最重要的部分是段和节，他们是真正的程序体，存储程序执行所需要的数据，程序中有很多段，常见的有代码段和数据段，段是由节组成的。多个节经过链接之后被合并成一个段。 段和节的信息用">
-<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/K837jihA1C.png?imageslim">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/K837jihA1C.png?imageslim">
 
 
 
@@ -395,9 +395,25 @@
                 
               
 
-              <time title="创建时间：2018-05-15 18:48:48" itemprop="dateCreated datePublished" datetime="2018-05-15T18:48:48+08:00">2018-05-15</time>
+              <time title="创建时间：2018-05-15 22:30:00" itemprop="dateCreated datePublished" datetime="2018-05-15T22:30:00+08:00">2018-05-15</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:21:28" itemprop="dateModified" datetime="2018-12-09T00:21:28+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -453,20 +469,20 @@
 <p>段和节的信息用header来描述，程序头是program header，节头是section header。</p>
 <p>程序中段的大小和数量不固定，节也是如此，因此需要一个专门的数据结构来描述他们，这个就是程序头表和节头表，他们用来存储多个程序头和节头，相当于数组的概念。</p>
 <p>由于程序中段和节的数量不固定，程序头表和节头表的大小也就不固定。并且各表在程序中存储的先后顺序不同，所有这些表在程序中存储的位置也是不固定了，为了能方便的找到这些表的位置，获取其信息，需要一个固定的结构来描述他们，记录其存储的位置和大小等信息，这个结构就是elf header</p>
-<p>elf格式的作用体现在两方面，一是链接阶段，二是运行阶段。下图是这两方面elf格式数据的布局<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/K837jihA1C.png?imageslim" alt=""></p>
+<p>elf格式的作用体现在两方面，一是链接阶段，二是运行阶段。下图是这两方面elf格式数据的布局<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/K837jihA1C.png?imageslim" alt=""></p>
 <p>下面重点说一下elf header中的数据</p>
 <h1 id="elf-header"><a href="#elf-header" class="headerlink" title="elf header"></a>elf header</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 32位elf头 */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Elf32_Ehdr</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> e_ident[<span class="number">16</span>];</span><br><span class="line">    Elf32_Half e_type;</span><br><span class="line">    Elf32_Half e_machine;</span><br><span class="line">    Elf32_Word e_version;</span><br><span class="line">    Elf32_Addr e_entry;</span><br><span class="line">    Elf32_Off e_phoff;</span><br><span class="line">    Elf32_Off e_shoff;</span><br><span class="line">    Elf32_Word e_flags;</span><br><span class="line">    Elf32_Half e_ehsize;</span><br><span class="line">    Elf32_Half e_phentsize;</span><br><span class="line">    Elf32_Half e_phnum;</span><br><span class="line">    Elf32_Half e_shentsize;</span><br><span class="line">    Elf32_Half e_shnum;</span><br><span class="line">    Elf32_Half e_shstrndx;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>上面是elf header中存储的数据，里面涉及这几种数据类型，数据类型的本质是其所占的字节数，赋予数据类型意义是为了方便里面，下图是这几种类型代表的意义。<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/LE444K0JJJ.png?imageslim" alt=""></p>
-<p>接下来是e_ident这个成员所表示的意义，见下图<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/3AEj89Ic8m.png?imageslim" alt=""></p>
+<p>上面是elf header中存储的数据，里面涉及这几种数据类型，数据类型的本质是其所占的字节数，赋予数据类型意义是为了方便里面，下图是这几种类型代表的意义。<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/LE444K0JJJ.png?imageslim" alt=""></p>
+<p>接下来是e_ident这个成员所表示的意义，见下图<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/3AEj89Ic8m.png?imageslim" alt=""></p>
 <p>下面是e_type所代表的意义<br>elf目标文件类型|取值|意义<br>—-|—-|—-<br>ET_NONE|0|未知目标文件格式<br>ET_REL|1|可重定位文件<br>ET_EXEC|2|可执行文件<br>ET_DYN|3|动态共享目标文件<br>ET_CORE|4|core文件<br>ET_LOPROC|0xff00|特定处理器文件的扩展下边界<br>ET_HIPROC|0xffff|特定处理器文件的扩展上边界</p>
 <p>虽然这里有很多的类型，但我们使用的只有ET_EXEC.</p>
-<p>接下来是e_machine，它表示该文件在哪种硬件平台上才能运行<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/hLB70846l6.png?imageslim" alt=""></p>
-<p>后面还有的数据不一一描述，这里从书上截图来说明<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/lC3HIhJJiB.png?imageslim" alt=""></p>
+<p>接下来是e_machine，它表示该文件在哪种硬件平台上才能运行<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/hLB70846l6.png?imageslim" alt=""></p>
+<p>后面还有的数据不一一描述，这里从书上截图来说明<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/lC3HIhJJiB.png?imageslim" alt=""></p>
 <h1 id="program-header"><a href="#program-header" class="headerlink" title="program header"></a>program header</h1><p>程序头是专门用来描述段信息的，这个段不是内存中的段，内存中的段是记录在全局描述符表中的。程序头描述的段是磁盘上程序中的一个段，常见的如代码段和数据段，下面是其结构<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Elf32_Phdr</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    Elf32_Word p_type;</span><br><span class="line">    Elf32_Off p_offset;</span><br><span class="line">    Elf32_Addr p_vaddr;</span><br><span class="line">    Elf32_Addr p_paddr;</span><br><span class="line">    Elf32_Word p_filesz;</span><br><span class="line">    Elf32_Word p_memsz;</span><br><span class="line">    Elf32_Word p_flags;</span><br><span class="line">    Elf32_Word p_align;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>p_type所表示的意义如下<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/6152bkkDBF.png?imageslim" alt=""></p>
-<p>p_offset表示本段在文件的偏移量<br>p_vaddr表示本段在内存中起始的虚拟地址<br>p_paddr仅用于与物理地址相关的系统中<br>p_fiesz表示本段在文件中的大小<br>p_memsz表示本段在内存中的大小<br>p_flags的意义见下图<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/EEDEf6KC03.png?imageslim" alt=""><br>p_align表示本段在文件和内存中的对齐方式。</p>
+<p>p_type所表示的意义如下<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/6152bkkDBF.png?imageslim" alt=""></p>
+<p>p_offset表示本段在文件的偏移量<br>p_vaddr表示本段在内存中起始的虚拟地址<br>p_paddr仅用于与物理地址相关的系统中<br>p_fiesz表示本段在文件中的大小<br>p_memsz表示本段在内存中的大小<br>p_flags的意义见下图<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/EEDEf6KC03.png?imageslim" alt=""><br>p_align表示本段在文件和内存中的对齐方式。</p>
 <p>目标文件在链接之后代码和数据等资源都是在段中，有了上面这些结构来记录相关信息，程序在加载的时候就根据这些信息从磁盘的某个位置将程序运行所需的资源加载到内存中，接下来通过一个实例对elf文件进行分析一下。</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/AfeI0IbehF.png?imageslim" alt=""></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/AfeI0IbehF.png?imageslim" alt=""></p>
 <p>这是我随便找的一个可执行文件查看的数据，用路线标出来的属于elf header中的数据，红线标出来的属于一个program header的数据，具体的意义可以对照着上面结构的字段去看。</p>
 <p>接下来的工作就是要实现一个加载器，将一个可执行文件的段数据加载到内存中去。使cs：eip指向其入口地址，一个进程就运行起来了。</p>
 <h1 id="实现进程加载器"><a href="#实现进程加载器" class="headerlink" title="实现进程加载器"></a>实现进程加载器</h1><p>elf header和program header的数据结构<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">uint32_t</span> Elf32_Word, Elf32_Addr, Elf32_Off;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">uint16_t</span> Elf32_Half;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 32位elf头 */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Elf32_Ehdr</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> e_ident[<span class="number">16</span>];</span><br><span class="line">    Elf32_Half e_type;</span><br><span class="line">    Elf32_Half e_machine;</span><br><span class="line">    Elf32_Word e_version;</span><br><span class="line">    Elf32_Addr e_entry;</span><br><span class="line">    Elf32_Off e_phoff;</span><br><span class="line">    Elf32_Off e_shoff;</span><br><span class="line">    Elf32_Word e_flags;</span><br><span class="line">    Elf32_Half e_ehsize;</span><br><span class="line">    Elf32_Half e_phentsize;</span><br><span class="line">    Elf32_Half e_phnum;</span><br><span class="line">    Elf32_Half e_shentsize;</span><br><span class="line">    Elf32_Half e_shnum;</span><br><span class="line">    Elf32_Half e_shstrndx;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 程序头表Program header.就是段描述头 */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Elf32_Phdr</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    Elf32_Word p_type; <span class="comment">// 见下面的enum segment_type</span></span><br><span class="line">    Elf32_Off p_offset;</span><br><span class="line">    Elf32_Addr p_vaddr;</span><br><span class="line">    Elf32_Addr p_paddr;</span><br><span class="line">    Elf32_Word p_filesz;</span><br><span class="line">    Elf32_Word p_memsz;</span><br><span class="line">    Elf32_Word p_flags;</span><br><span class="line">    Elf32_Word p_align;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 段类型 */</span></span><br><span class="line"><span class="keyword">enum</span> segment_type</span><br><span class="line">&#123;</span><br><span class="line">    PT_NULL,    <span class="comment">// 忽略</span></span><br><span class="line">    PT_LOAD,    <span class="comment">// 可加载程序段</span></span><br><span class="line">    PT_DYNAMIC, <span class="comment">// 动态加载信息</span></span><br><span class="line">    PT_INTERP,  <span class="comment">// 动态加载器名称</span></span><br><span class="line">    PT_NOTE,    <span class="comment">// 一些辅助信息</span></span><br><span class="line">    PT_SHLIB,   <span class="comment">// 保留</span></span><br><span class="line">    PT_PHDR     <span class="comment">// 程序头表</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
@@ -586,7 +602,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

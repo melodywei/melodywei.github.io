@@ -115,15 +115,15 @@
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="文件描述符在之前介绍的概念中，inode是用来表示一个文件的，用于描述文件的存储信息，文件的权限等。但这个inode结构是操作系统为自己的文件系统准备的数据结构，仅供其内部使用，与用户的关系不大，接下来要介绍的文件描述符才是用户能够使用的结构。 在linux系统中，读写文件的本质是先通过文件的inode找到文件数据块的扇区地址，随后对这些扇区的数据进行读写，从而实现了文件的读写。 对用户进程来说，">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180512/Ba42f1HEEc.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180512/mcCchbaaE9.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180513/3D3gdG5cdL.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180513/CedA9m8Df4.png?imageslim">
-<meta property="og:updated_time" content="2018-05-12T18:12:58.000Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180512/Ba42f1HEEc.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180512/mcCchbaaE9.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180513/3D3gdG5cdL.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180513/CedA9m8Df4.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:21:49.748Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="十七. 文件系统三(文件的创建)">
 <meta name="twitter:description" content="文件描述符在之前介绍的概念中，inode是用来表示一个文件的，用于描述文件的存储信息，文件的权限等。但这个inode结构是操作系统为自己的文件系统准备的数据结构，仅供其内部使用，与用户的关系不大，接下来要介绍的文件描述符才是用户能够使用的结构。 在linux系统中，读写文件的本质是先通过文件的inode找到文件数据块的扇区地址，随后对这些扇区的数据进行读写，从而实现了文件的读写。 对用户进程来说，">
-<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180512/Ba42f1HEEc.png?imageslim">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180512/Ba42f1HEEc.png?imageslim">
 
 
 
@@ -391,9 +391,25 @@
                 
               
 
-              <time title="创建时间：2018-05-13 02:12:58" itemprop="dateCreated datePublished" datetime="2018-05-13T02:12:58+08:00">2018-05-13</time>
+              <time title="创建时间：2018-05-13 20:30:00" itemprop="dateCreated datePublished" datetime="2018-05-13T20:30:00+08:00">2018-05-13</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:21:49" itemprop="dateModified" datetime="2018-12-09T00:21:49+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -448,7 +464,7 @@
 <p>对用户进程来说，一个进程可以多次的打开同一个文件，一个文件也可以被多个进行同时打开。对于这个被多次打开的文件，每打开一次，都需要一个结构来记录该文件目前的状态。比如说A进行第一次打开1.txt的时候，读取到了第10行的位置，第二次打开1.txt的时候，读取到了20行的位置。这里的10行，20行就是打开的文件状态中的文件偏移量，它记录的是相对于文件首地址的一个偏移。即使一个文件被同时多次打开，各自操作的偏移量也互不影响。</p>
 <p>也就是说，会有一个文件结构来描述文件打开后，文件读写的偏移量等信息。一个文件对应一个inode，一个文件可以被多次打开，即一个inode对应多个文件结构。</p>
 <p>文件描述符的基本结构如下</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180512/Ba42f1HEEc.png?imageslim" alt="文件描述符的结构"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180512/Ba42f1HEEc.png?imageslim" alt="文件描述符的结构"></p>
 <p>接下来通过linux的open函数来了解一下文件描述符</p>
 <p>open的函数原型如下<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, inf flags)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>成功调用该函数之后，它会返回文件pathname的文件描述符，该返回值是一个int的数值，肯定不是代表真正的文件描述符结构。它是作为进程pcb中文件描述符数组的下标索引。通过这个下标在进程pcb中找到某个数据。大家可能会认为这个数据就是真正的文件描述符了。其实不然，在进程pcb的文件描述符数组中，记录的任然不是真正的文件描述符结构，它是一个指针数组，数组中的数据指向文件表中某个文件结构，该文件结构就是真正记录被打开文件的信息所在。</p>
@@ -460,7 +476,7 @@
 <li>从该文件结构中获取到记录的文件信息</li>
 </ol>
 <p>通过一副图来描述一下这个过程</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180512/mcCchbaaE9.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180512/mcCchbaaE9.png?imageslim" alt="mark"></p>
 <p>看到这里获取会有一个疑问，为什么pcb中不直接记录文件的描述符信息，而是指向了其他的区域。</p>
 <p>因为记录文件信息的描述符较大，每打开一次文件，就需要记录一次。打开的文件多了之后，进程pcb的结构就会变的很大，而pcb占用的内存通常就是几个页框，linux中的pcb也只是2页框的大小，所以这些信息不会被放入pcb中。</p>
 <p>看完了上面的理论之后，接下来就来具体看一下文件描述符的代码实现</p>
@@ -485,10 +501,10 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 打开或创建文件成功后,返回文件描述符,否则返回-1 */</span></span><br><span class="line"><span class="keyword">int32_t</span> sys_open(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">uint8_t</span> flags)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (pathname[<span class="built_in">strlen</span>(pathname) - <span class="number">1</span>] == <span class="string">'/'</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	ASSERT(flags &lt;= <span class="number">7</span>);</span><br><span class="line">	<span class="keyword">int32_t</span> fd = <span class="number">-1</span>; <span class="comment">// 默认为找不到</span></span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">path_search_record</span> <span class="title">searched_record</span>;</span></span><br><span class="line">	<span class="built_in">memset</span>(&amp;searched_record, <span class="number">0</span>, <span class="keyword">sizeof</span>(struct path_search_record));</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 记录目录深度.帮助判断中间某个目录不存在的情况 */</span></span><br><span class="line">	<span class="keyword">uint32_t</span> pathname_depth = path_depth_cnt((<span class="keyword">char</span> *)pathname);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 先检查文件是否存在 */</span></span><br><span class="line">	<span class="keyword">int</span> inode_no = search_file(pathname, &amp;searched_record);</span><br><span class="line">	<span class="keyword">bool</span> found = inode_no != <span class="number">-1</span> ? <span class="literal">true</span> : <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (searched_record.file_type == FT_DIRECTORY)</span><br><span class="line">	&#123;</span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">uint32_t</span> path_searched_depth = path_depth_cnt(searched_record.searched_path);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 先判断是否把pathname的各层目录都访问到了,即是否在某个中间目录就失败了 */</span></span><br><span class="line">	<span class="keyword">if</span> (pathname_depth != path_searched_depth)</span><br><span class="line">	&#123; </span><br><span class="line">        <span class="comment">// 说明并没有访问到全部的路径,某个中间目录是不存在的</span></span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 若是在最后一个路径上没找到,并且并不是要创建文件,直接返回-1 */</span></span><br><span class="line">	<span class="keyword">if</span> (!found &amp;&amp; !(flags &amp; O_CREAT))</span><br><span class="line">	&#123;</span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (found &amp;&amp; flags &amp; O_CREAT)</span><br><span class="line">	&#123; </span><br><span class="line">        <span class="comment">// 若要创建的文件已存在</span></span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">switch</span> (flags &amp; O_CREAT)</span><br><span class="line">	&#123;</span><br><span class="line">	<span class="keyword">case</span> O_CREAT:</span><br><span class="line">		printk(<span class="string">"creating file\n"</span>);</span><br><span class="line">		fd = file_create(searched_record.parent_dir, (<span class="built_in">strrchr</span>(pathname, <span class="string">'/'</span>) + <span class="number">1</span>), flags);</span><br><span class="line">		dir_close(searched_record.parent_dir);</span><br><span class="line">	<span class="comment">// 其余为打开文件</span></span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		fd = file_open(inode_no, flags);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 此fd是指任务pcb-&gt;fd_table数组中的元素下标,</span></span><br><span class="line"><span class="comment">      * 并不是指全局file_table中的下标 */</span></span><br><span class="line">	<span class="keyword">return</span> fd;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>文件的创建过程中主要是对路径的解析，这里暂时还不支持相对路径，这里必须使用绝对路径来进行文件的创建。在路径没有问题且该文件不存在的前提下，就会调用之前的file_create函数创建文件。</p>
 <p>接下来在模拟器上运行一下，看看创建文件的具体表现</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180513/3D3gdG5cdL.png?imageslim" alt="主分区信息"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180513/3D3gdG5cdL.png?imageslim" alt="主分区信息"></p>
 <p>上面的图片是主分区格式化时数据的区域，我用红框标记了数据的起始扇区位置，该位置应该与根目录所在的位置相同。</p>
 <p>将数据起始扇区的位置*512后得到数据区的地址，在该地址处查看512字节也就是一扇区的数据内容，结果如下</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180513/CedA9m8Df4.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180513/CedA9m8Df4.png?imageslim" alt="mark"></p>
 <p>在根目录下，目前有三个目录项 <strong>.  ..和创建的文件file1</strong>，每个目录项包含三部分的内容，16字节的filename，4字节的inode号，4字节的文件类型。共24字节的内容</p>
 <p>用红框标记的是 <strong>.</strong> 这个目录项的数据，2E代表它的文件名，它表示当前目录也就是根目录，其inode号为0，文件类型为2，代表一个目录</p>
 <p>黄线标记的是 <strong>..</strong> 它代表上一层目录，因为目前在根目录下，所以它还是表示根目录。</p>
@@ -541,7 +557,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/05/15/filesystem4/" rel="prev" title="十八. 文件系统四(文件的读写与删除)">
+              <a href="/2018/05/14/filesystem4/" rel="prev" title="十八. 文件系统四(文件的读写与删除)">
                 十八. 文件系统四(文件的读写与删除) <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -615,7 +631,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

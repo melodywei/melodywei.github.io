@@ -115,17 +115,17 @@
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="简介中断是指CPU获知了计算机中发生的某些事，CPU暂停正在执行的程序，转而去执行处理该事件的程序，当这段程序执行完了之后，CPU继续执行刚才的程序。 通过中断可以极大的提高CPU的执行效率，如果没有中断，在处理器与外部设备通信时，他必须在向该设备发送指令后进入忙等待，反复轮询该设备是否就绪，这样就浪费了大量处理器的执行周期。引入中断之后，当处理器发出设备请求后就可以立即返回处理其他任务，而当设备">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180419/AIikb6ajl0.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180419/5fbdHfAag5.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180419/AeE7bAB3jI.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180419/9773glc7f0.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180419/el0FIba2hH.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180419/Dmmcgegmkh.png?imageslim">
-<meta property="og:updated_time" content="2018-04-22T10:29:48.000Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/AIikb6ajl0.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/5fbdHfAag5.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/AeE7bAB3jI.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/9773glc7f0.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/el0FIba2hH.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/Dmmcgegmkh.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:22:02.434Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="七. 中断">
 <meta name="twitter:description" content="简介中断是指CPU获知了计算机中发生的某些事，CPU暂停正在执行的程序，转而去执行处理该事件的程序，当这段程序执行完了之后，CPU继续执行刚才的程序。 通过中断可以极大的提高CPU的执行效率，如果没有中断，在处理器与外部设备通信时，他必须在向该设备发送指令后进入忙等待，反复轮询该设备是否就绪，这样就浪费了大量处理器的执行周期。引入中断之后，当处理器发出设备请求后就可以立即返回处理其他任务，而当设备">
-<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180419/AIikb6ajl0.png?imageslim">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/AIikb6ajl0.png?imageslim">
 
 
 
@@ -393,9 +393,25 @@
                 
               
 
-              <time title="创建时间：2018-04-22 18:29:48" itemprop="dateCreated datePublished" datetime="2018-04-22T18:29:48+08:00">2018-04-22</time>
+              <time title="创建时间：2018-04-22 21:00:00" itemprop="dateCreated datePublished" datetime="2018-04-22T21:00:00+08:00">2018-04-22</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:02" itemprop="dateModified" datetime="2018-12-09T00:22:02+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -451,7 +467,7 @@
 <h2 id="外部中断"><a href="#外部中断" class="headerlink" title="外部中断"></a>外部中断</h2><p>外部中断是指来自CPU外部的中断，而外部的中断源通常时某个硬件，所以外部的中断也叫硬件中断</p>
 <p>由于外部设备在种类和数量上都非常多，CPU不可能为每个外部设备专门设计一个接口去处理他的中断信号。所以只能提供统一的接口作为中断信号的公共线路，所有来自外设的中断信号都共享公共线路连接都CPU。</p>
 <p>其接口示意图如下</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180419/AIikb6ajl0.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/AIikb6ajl0.png?imageslim" alt="mark"></p>
 <p>从INTR引脚收到的中断都是不影响系统运行的，可以随时处理，他不会影响到CPU的执行。也称为可屏蔽中断。可以通过eflag中的if位将所有这些外部中断屏蔽</p>
 <p>从NMI引脚收到的中断，通常是由于系统发生致命错误所导致的，比如电源掉电，内存读写错误等等。</p>
 <h2 id="内部中断"><a href="#内部中断" class="headerlink" title="内部中断"></a>内部中断</h2><p>内部中断可分为软中断和异常</p>
@@ -481,11 +497,11 @@
 </ol>
 <h1 id="中断描述符表"><a href="#中断描述符表" class="headerlink" title="中断描述符表"></a>中断描述符表</h1><p>中断描述符表是保护模式下用于存储中断处理程序入口的表，当CPU接受到一个中断时，需要根据该中断的中断向量号在此表中检索对应的描述符，在该描述符中找到中断处理程序的起始地址，然后执行中断处理程序</p>
 <h2 id="门描述符"><a href="#门描述符" class="headerlink" title="门描述符"></a>门描述符</h2><p>在中断描述符表中存储的不只是中断描述符，还包括任务门描述符和陷阱门描述符。IDT中只有这种称为门的描述符，那么就要了解一下这些门的具体结构</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180419/5fbdHfAag5.png?imageslim" alt="任务门描述符"></p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180419/AeE7bAB3jI.png?imageslim" alt="中断门描述符"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/5fbdHfAag5.png?imageslim" alt="任务门描述符"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/AeE7bAB3jI.png?imageslim" alt="中断门描述符"></p>
 <p>中断门包含了中断处理程序所在的段选择子和段内偏移地址，当通过此方式进入中断后，标志寄存器eflags中的IF位自动置0，避免中断嵌套。linux就是利用的中断门实现的系统调用，也就是int 0x80。</p>
 <p>中断门只允许存放在IDT中，而其他的门描述符则不然。</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180419/9773glc7f0.png?imageslim" alt="陷阱门描述符"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/9773glc7f0.png?imageslim" alt="陷阱门描述符"></p>
 <p>在描述符中，通过S字段+type字段来确定描述符的具体类型</p>
 <p>S字段为1时代表系统段，为0时代表数据段。此处的门描述符全部处于系统段下。</p>
 <p>DPL表示描述符特权级</p>
@@ -502,10 +518,10 @@
 <p>如果该中断是一个软中断，也就是通过 int n, int3, into等引发的中断，执行上述两步的特权级检查</p>
 <p>如果该中断是外部设备中断或者异常，只需要执行第二步的特权级检查</p>
 <p>中断处理过程的示意图：</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180419/el0FIba2hH.png?imageslim" alt="中断处理过程"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/el0FIba2hH.png?imageslim" alt="中断处理过程"></p>
 <h1 id="中断发生时的压栈"><a href="#中断发生时的压栈" class="headerlink" title="中断发生时的压栈"></a>中断发生时的压栈</h1><p>在中断发生之后，处理器要去执行中断处理程序，该中断处理程序是通过中断门描述符中保存的代码段选择子和段内偏移找到的，也就是说需要重新加载段寄存器，那么为了能在中断处理完了之后还能返回当前进程，就必须保存当前进程的 <strong>CS:EIP</strong>，保存的地方当然就是中断处理程序的栈中了。因为中断可以在任意特权级下发生，所以当前进程的EFLAGS寄存器同样需要保存，如果涉及到特权级的变化，还需要压如SS和ESP寄存器</p>
 <p>通过一副图来详细解释压栈的情况与顺序</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180419/Dmmcgegmkh.png?imageslim" alt="中断压栈"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180419/Dmmcgegmkh.png?imageslim" alt="中断压栈"></p>
 <p>图A、B：在发生中断是通过特权级的检测，发现需要向高特权级转移，所以要保存当前程序栈的SS和ESP的值，在这里记为ss_old, esp_old，然后在新栈中压入当前程序的eflags寄存器</p>
 <p>图C、D：由于要切换目标代码段，这种段间转移，要对CS和EIP进行备份，同样将其存入新栈中。某些异常会有错误码，用来标识异常发生在哪个段上，对于有错误码的情况，要将错误码也压入栈中。</p>
 <p>入栈说完了，在中断执行完了返回的时候通过指令 <strong>iret</strong> 完成，这个指令专门用于从中断返回</p>
@@ -540,8 +556,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/04/22/protectedmode2/" rel="next" title="四. 获取内存容量">
-                <i class="fa fa-chevron-left"></i> 四. 获取内存容量
+              <a href="/2018/04/22/cdecl/" rel="next" title="六. 函数调用约定与系统调用">
+                <i class="fa fa-chevron-left"></i> 六. 函数调用约定与系统调用
               </a>
             
           </div>
@@ -624,7 +640,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

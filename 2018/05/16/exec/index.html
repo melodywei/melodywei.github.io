@@ -115,15 +115,15 @@
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="exec在linux的bash shell中，执行外部命令时，该shell会fork一个子进程，这个子进程调用exec从磁盘上加载外部命令对应的程序。这是exec的一个应用。通过它的应用来看原理 exec会把一个可执行文件的绝对路径作为参数，把当前正在运行的用户进程的进程体用该可执行文件的进程体替换，从而实现新进程的执行，而进程的pid是不变的。可以这样认为，exec并没有创建新的进程，只是替换了">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/2Kk2HhjgLb.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/C22FB3gHCk.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/mLCGbjA9Gb.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180516/9ik0m9kkf7.png?imageslim">
-<meta property="og:updated_time" content="2018-05-15T16:14:30.000Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/2Kk2HhjgLb.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/C22FB3gHCk.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/mLCGbjA9Gb.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180516/9ik0m9kkf7.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:21:33.449Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="二十二. 让shell支持外部命令">
 <meta name="twitter:description" content="exec在linux的bash shell中，执行外部命令时，该shell会fork一个子进程，这个子进程调用exec从磁盘上加载外部命令对应的程序。这是exec的一个应用。通过它的应用来看原理 exec会把一个可执行文件的绝对路径作为参数，把当前正在运行的用户进程的进程体用该可执行文件的进程体替换，从而实现新进程的执行，而进程的pid是不变的。可以这样认为，exec并没有创建新的进程，只是替换了">
-<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180515/2Kk2HhjgLb.png?imageslim">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/2Kk2HhjgLb.png?imageslim">
 
 
 
@@ -391,9 +391,25 @@
                 
               
 
-              <time title="创建时间：2018-05-16 00:14:30" itemprop="dateCreated datePublished" datetime="2018-05-16T00:14:30+08:00">2018-05-16</time>
+              <time title="创建时间：2018-05-16 22:30:00" itemprop="dateCreated datePublished" datetime="2018-05-16T22:30:00+08:00">2018-05-16</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:21:33" itemprop="dateModified" datetime="2018-12-09T00:21:33+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -452,20 +468,20 @@
 <p>第一次while(1)，也就是当前的shell进程，这个shell本身是一个死循环，处于不断的检测输入的状态，当fork一个子进程后，为了不使当前进程的堆栈数据被修改，使其在此空转，因为父进程一般会先与子进程执行，它再执行的话会对栈中的数据进行修改，比如子进程中将会使用到的final_path。</p>
 <p>第二个while(1)，也就是子进程复制了父进程的数据会会执行到的代码，因为目前没有实现进程的退出，为了不使该进程乱执行，在其应该结束的位置使其空转。等到后面实现了wait和exit后，就可以将其替换掉。</p>
 <p>目前的shell能够支持外部命令了，先随便写个进程测试一下效果。</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/2Kk2HhjgLb.png?imageslim" alt=""><br>在我的linux上写了一个prog的程序，它的作用是输出一句话，将其用gcc编译链接成可执行文件后，将其写入到虚拟机的文件系统当中，图上就是它的执行效果啦。当然这个链接的过程必须使用目前这个kernel中支持的目标文件，比如printf函数，必须用我们自己实现的printf，而不是linux中自带的printf。所以用户进程所能实现的功能比较有限。</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/2Kk2HhjgLb.png?imageslim" alt=""><br>在我的linux上写了一个prog的程序，它的作用是输出一句话，将其用gcc编译链接成可执行文件后，将其写入到虚拟机的文件系统当中，图上就是它的执行效果啦。当然这个链接的过程必须使用目前这个kernel中支持的目标文件，比如printf函数，必须用我们自己实现的printf，而不是linux中自带的printf。所以用户进程所能实现的功能比较有限。</p>
 <h1 id="支持参数的用户进程"><a href="#支持参数的用户进程" class="headerlink" title="支持参数的用户进程"></a>支持参数的用户进程</h1><p>在之前的内建命令中，传递参数还是非常简单的，在调用的时候将参数直接传递过去即可，内建的命令只是一个函数，还可以通过栈来传递参数。但是对于外部的命令来说，如何让其支持形如 “cat file”这样的命令呢，这个file就是前面所说的参数。</p>
 <p>获取参数是在命令执行之前，要想把获取到的参数传递给某个命令，该命令所属的进程必须先有栈，但外部命令的执行，实质上是加载一个用户进程的过程，进程都没创建，更何况进程的栈了。</p>
 <p>大家应该见过main函数的这种形式<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>main函数有了参数，那么这个参数是谁传递给他的，既然他有参数，那么肯定是被调用执行的，调用者将参数传给了它。这个调用者就是CRT(c 运行库)，CRT最主要的工作就是初始化运行环境，在进入main函数之前为用户进程准备条件，参数等。在main函数执行完返回之后，对用户进程的资源进行回收。</p>
-<p>我们编译好的程序主体大概长这样<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/C22FB3gHCk.png?imageslim" alt=""></p>
+<p>我们编译好的程序主体大概长这样<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/C22FB3gHCk.png?imageslim" alt=""></p>
 <p>main函数只是夹在中间的一部分，既不是从它开始，也不是从它结束</p>
 <p>当然这里不可能真的实现一个CRT，我们要做的工作只是将参数push进来，call main即可</p>
 <p>所以这个简陋的CRT只有8行代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[bits 32]</span><br><span class="line">extern main</span><br><span class="line">section .text</span><br><span class="line">global _start</span><br><span class="line">    ;这两个要和exec中指定的寄存器一致</span><br><span class="line">    push ebx    ;压入argv</span><br><span class="line">    push ecx    ;压入argc</span><br><span class="line">    call main</span><br></pre></td></tr></table></figure></p>
 <p>这个才是程序真正的入口，既然真正的入口在这里，那么main函数的函数名是什么都不重要了，我们可以使用自己想取的任意名字，只是在习惯上使用main作为入口。</p>
-<p>接下来测试一下带参数的版本，将参数打印出来。<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180515/mLCGbjA9Gb.png?imageslim" alt=""></p>
+<p>接下来测试一下带参数的版本，将参数打印出来。<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180515/mLCGbjA9Gb.png?imageslim" alt=""></p>
 <h1 id="cat命令"><a href="#cat命令" class="headerlink" title="cat命令"></a>cat命令</h1><p>前面说了那么多进程方面的概念，但目前为止还没有实现一个真正能用的进程。下面就实现一下cat命令，当前，是简化之后的，通过这个命令查看普通文件的数据。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> buf_size = <span class="number">1024</span>;</span><br><span class="line">    <span class="keyword">char</span> abs_path[<span class="number">512</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">void</span> *buf = <span class="built_in">malloc</span>(buf_size);</span><br><span class="line">    <span class="keyword">if</span> (buf == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (argv[<span class="number">1</span>][<span class="number">0</span>] != <span class="string">'/'</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        getcwd(abs_path, <span class="number">512</span>);</span><br><span class="line">        <span class="built_in">strcat</span>(abs_path, <span class="string">"/"</span>);</span><br><span class="line">        <span class="built_in">strcat</span>(abs_path, argv[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">strcpy</span>(abs_path, argv[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> fd = open(abs_path, O_RDONLY);</span><br><span class="line">    <span class="keyword">if</span> (fd != <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> read_bytes = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            read_bytes = read(fd, buf ,buf_size);</span><br><span class="line">            <span class="keyword">if</span> (read_bytes == <span class="number">-1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            write(std_out, buf, read_bytes);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">free</span>(buf);</span><br><span class="line">        close(fd);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这就是cat的实现了。下面来测试一下其功能<br><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180516/9ik0m9kkf7.png?imageslim" alt=""></p>
+<p>这就是cat的实现了。下面来测试一下其功能<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180516/9ik0m9kkf7.png?imageslim" alt=""></p>
 <p>进程的基本功能有了，我们可以从磁盘上加载用户进程，可以通过shell执行外部命令。后面会实现一种进程同步的方式和一种进程间通信的方式</p>
 
       
@@ -581,7 +597,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

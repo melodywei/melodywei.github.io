@@ -341,7 +341,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/bochs_deploy/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/18/pipe/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -361,7 +361,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/08/bochs_deploy/" class="post-title-link" itemprop="https://modifying.github.io/page/4/index.html">一. bochs环境部署</a>
+                <a href="/2018/05/18/pipe/" class="post-title-link" itemprop="https://modifying.github.io/page/4/index.html">二十三. 进程同步与进程间通信</a>
               
             
           </h1>
@@ -386,9 +386,25 @@
                 
               
 
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+              <time title="创建时间：2018-05-18 22:30:00" itemprop="dateCreated datePublished" datetime="2018-05-18T22:30:00+08:00">2018-05-18</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:22:30" itemprop="dateModified" datetime="2018-12-09T00:22:30+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -440,179 +456,13 @@
       
         
           
-          配置要求一台linux操作系统的机器即可，最好是32位的。因为我们实现的小kernel是32位的，在64的机器上进行编译和链接可能会出现某些问题。笔者这里使用的是Ubuntu16.4
-环境配置bochs安装与配置安装我们自制的操作系统也是运行在一个虚拟机中的，这里我们用的是bochs，bochs本身
+          进程同步看一下上一节写的调用外部shell的方法。
+1234567891011121314151617181920memset(final_path, 0, sizeof(final_path));int32_t pid = fork();if (pid)&#123;     while(1);&#
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/bochs_deploy/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/alloc/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="melody">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="melodyのblog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/08/alloc/" class="post-title-link" itemprop="https://modifying.github.io/page/4/index.html">从零开始，打造自己的STL(三、alloc)</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/STL/" itemprop="url" rel="index"><span itemprop="name">STL</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          简述在stl中，所有的内存分配与释放都是交由allocator来实现的。在大部分情况下，我们都接触不到这里面的内容，因为它一直是隐藏在幕后悄悄的工作。  
-当然如果对于内存分配有特殊的要求的话，STL也提供了接口供我们使用自己的分配器  
-比如在vector的定义上1234template &lt;
-          ...
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/12/08/alloc/#more" rel="contents">
+              <a class="btn" href="/2018/05/18/pipe/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -706,7 +556,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

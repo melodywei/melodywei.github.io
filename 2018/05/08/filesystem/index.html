@@ -115,18 +115,18 @@
 <meta property="og:site_name" content="melodyのblog">
 <meta property="og:description" content="磁盘的基础概念扇区：它是磁盘读写的基本单位。在我们个人的pc上，他的大小通常为512byte 块：在windows中，称为簇。一个块由多个扇区组成，磁盘在进行读写数据的时候，不可能有一扇区的数据就读或写一次，而是等数据累计到一定量后，在统一进行读写，而这个数据量就叫块。在对磁盘进行格式化分区的时候可以选择块的大小，默认的是4kb。因为每次进行读写的数据量都是一块为单位，所以在磁盘上数据的存储也是以">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/cDcm8biCHB.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/DG2f0F722k.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/FJC3Cdkm6b.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/ag54Fh98Ed.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/5c6HFLB741.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/FdLBD0fH5k.png?imageslim">
-<meta property="og:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/HhF1eH9mmh.png?imageslim">
-<meta property="og:updated_time" content="2018-05-08T15:54:44.000Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/cDcm8biCHB.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/DG2f0F722k.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/FJC3Cdkm6b.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/ag54Fh98Ed.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/5c6HFLB741.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/FdLBD0fH5k.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/HhF1eH9mmh.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T16:21:38.136Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="十五. 文件系统一(文件系统的基本概念)">
 <meta name="twitter:description" content="磁盘的基础概念扇区：它是磁盘读写的基本单位。在我们个人的pc上，他的大小通常为512byte 块：在windows中，称为簇。一个块由多个扇区组成，磁盘在进行读写数据的时候，不可能有一扇区的数据就读或写一次，而是等数据累计到一定量后，在统一进行读写，而这个数据量就叫块。在对磁盘进行格式化分区的时候可以选择块的大小，默认的是4kb。因为每次进行读写的数据量都是一块为单位，所以在磁盘上数据的存储也是以">
-<meta name="twitter:image" content="http://p5inpf0t8.bkt.clouddn.com/pic/180508/cDcm8biCHB.png?imageslim">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/cDcm8biCHB.png?imageslim">
 
 
 
@@ -394,9 +394,25 @@
                 
               
 
-              <time title="创建时间：2018-05-08 23:54:44" itemprop="dateCreated datePublished" datetime="2018-05-08T23:54:44+08:00">2018-05-08</time>
+              <time title="创建时间：2018-05-08 20:30:00" itemprop="dateCreated datePublished" datetime="2018-05-08T20:30:00+08:00">2018-05-08</time>
             
 
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-09 00:21:38" itemprop="dateModified" datetime="2018-12-09T00:21:38+08:00">2018-12-09</time>
+              
             
           </span>
 
@@ -448,21 +464,21 @@
       
         <h1 id="磁盘的基础概念"><a href="#磁盘的基础概念" class="headerlink" title="磁盘的基础概念"></a>磁盘的基础概念</h1><p>扇区：它是磁盘读写的基本单位。在我们个人的pc上，他的大小通常为512byte</p>
 <p>块：在windows中，称为簇。一个块由多个扇区组成，磁盘在进行读写数据的时候，不可能有一扇区的数据就读或写一次，而是等数据累计到一定量后，在统一进行读写，而这个数据量就叫块。在对磁盘进行格式化分区的时候可以选择块的大小，默认的是4kb。因为每次进行读写的数据量都是一块为单位，所以在磁盘上数据的存储也是以块为大小。最显著的例子是，我们在windows上创建一个文件，它的实际大小都为块大小的整数倍。</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180508/cDcm8biCHB.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/cDcm8biCHB.png?imageslim" alt="mark"></p>
 <p>总结的来说，扇区是由磁盘的设计决定的，它决定了磁盘一次读写所能取得的数据量。块这个概念是由程序员设计出来的，它就类似于缓冲区的概念，在累计到一定的数据量之后进行一次性读写。扇区和块的概念有点类似于bit和byte。bit计算机系统中最小的数据单元，但通常我们都不会直接对bit进行操作，所以通常会将byte作为计算机中最小的数据单位。所以在后面中，没有特殊的说明，文件系统的最小单元默认就是块。</p>
 <h1 id="链式文件系统"><a href="#链式文件系统" class="headerlink" title="链式文件系统"></a>链式文件系统</h1><p>磁盘中，数据的存储都是以块为大小，这里的块大小都以4KB来举例，对于大于4KB的文件，就会对其进行分块存储。如10KB的文件，就会将其分为3块。不同对文件系统对这3块文件的存储方式都会不一样，这里用FAT的链式文件系统举例。</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180508/DG2f0F722k.png?imageslim" alt="链式文件系统的数据存储"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/DG2f0F722k.png?imageslim" alt="链式文件系统的数据存储"></p>
 <p>这幅图很形象的说明了链式文件系统的特点，文件的块是分布在各个零散的空间中，这样对空间的利用率有极大的提升。但是想要放到到某个指定的块就必须从第一个块开始向下寻找，访问的速度较慢。</p>
 <p>windows的上古时期使用的就是这种文件系统。</p>
 <h1 id="索引式文件系统"><a href="#索引式文件系统" class="headerlink" title="索引式文件系统"></a>索引式文件系统</h1><p>在UNIX时代，就已经实现了索引式的文件系统。它的原理是为一个文件的所有块建立一个索引表，索引表就是块地址数组，每个数组元素就是块的地址，第n个数组元素指向文件中的第n个块，这样访问任意一个块的时候，只需要从索引表中获得块地址就可以了。而且文件中的块依然可以分散到不连续的零散空间中。其结构如下图所示</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180508/FJC3Cdkm6b.png?imageslim" alt="索引式文件系统"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/FJC3Cdkm6b.png?imageslim" alt="索引式文件系统"></p>
 <p>索引表的索引结构称为inode，用来索引，跟踪一个文件的所有块。inode是文件索引结构组织形式的具体体现，一个文件就必须对应一个inode。</p>
 <p>索引表本身要占用存储空间，如果文件很大时，块就比较多，索引表就会很大。UNIX为了解决这个问题，采用间接索引表来处理。</p>
 <p>具体的做法是：每个索引表中有15个索引项，前12个索引项对应文件的12个块，他们是文件的直接块。若文件大于12块，就再建立一个新的块索引表，新索引表称为一级间接索引表，表中可容纳256个块地址，这个索引表也会占用一个物理块，老的索引表的第13个索引项就会指向这个索引表所在的物理块。通过一级间接索引表，文件最大可达到 12 + 256 = 268块。</p>
 <p>如果文件超过268块的大小，就再建立二级间接索引表，此表中各个表项存储的是一级间接索引表，老的索引表中的第14个索引项就会指向这个二级间接索引表，此时的文件最大可到 268 + 256 * 256。如果块大小为4KB的话，大约可以表示257MB的文件。</p>
 <p>如果任然不够用的话，就会建立三级间接索引表，让老索引表的第15个索引项指向这个三级间接索引表。此时能表示的文件大小大约是64GB。</p>
 <p>inode的结构如图所示</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180508/ag54Fh98Ed.png?imageslim" alt="inode结构"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/ag54Fh98Ed.png?imageslim" alt="inode结构"></p>
 <h1 id="目录与目录项"><a href="#目录与目录项" class="headerlink" title="目录与目录项"></a>目录与目录项</h1><p>在磁盘上的文件系统中，没有用来专门表示目录的结构，磁盘上有的只是inode，inode是用于描述一个文件实体的数据块，至于数据块中记录的是什么，并不是有inode决定的。</p>
 <p>既然磁盘上只有这一个结构，那么目录同样也是通过inode来表示的。inode是用来表示文件的，那么也可以说，目录也是文件的一种。</p>
 <p>inode既可以表示普通文件，也可以表示目录，那么肯定要有一种方法来区分它到底是普通文件还是目录。这个就是通过inode中的数据块来区分的。</p>
@@ -471,17 +487,17 @@
 <p>不管是普通文件还是目录文件，它总会存在于某个目录中，所有的文件都位于根目录 <strong>/</strong> 之下。我们平时使用的 <strong>ls</strong> 命令就是目录项的外在表现</p>
 <p>在目录项中会记录该文件的类型，是属于普通文件，还是属于一个目录。</p>
 <p>下面是目录项的一个示意图</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180508/5c6HFLB741.png?imageslim" alt="mark"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/5c6HFLB741.png?imageslim" alt="mark"></p>
 <p>通过目录项便可以通过文件名找到文件对应的数据了。</p>
 <p>首先通过文件名找到位于该目录项中对应的inode编号</p>
 <p>然后通过通过这个inode编号在inode数组中找到该文件对应的inode</p>
 <p>最后通过这个文件对应的inode找到该文件对应的数据。</p>
 <h1 id="超级块"><a href="#超级块" class="headerlink" title="超级块"></a>超级块</h1><p>在文件系统中，一个文件用一个inode表示，所有的inode组成了inode数组，这个inode数组存储在哪里，如何对其进行管理。文件系统中，哪些块被使用了，哪些块是空闲的，这些信息都需要记录，对这些数据进行统一管理和记录的数据结构叫做超级块。它的结构如图所示</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180508/FdLBD0fH5k.png?imageslim" alt="超级块"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/FdLBD0fH5k.png?imageslim" alt="超级块"></p>
 <p>超级块中的大部分数据都很好理解，里面的魔数是用来确定文件系统的标志的，用它来区别其他的文件系统。虽然对于我们这个简单的内核来说没什么意义，但是模仿就模仿到底，加上这个结构也不是很复杂。</p>
 <p>超级块是文件系统基本信息的配置文件，它是在为分区创建文件系统时创建的，所有关于文件系统的基本信息都记录在超级块中，因此超级块的位置和大小是固定的，它被固定存储在各个分区的第2个扇区中，通常占用1扇区的大小。</p>
 <p>这个kernel的文件系统模仿ext2文件系统实现，其文件系统的布局如图所示</p>
-<p><img src="http://p5inpf0t8.bkt.clouddn.com/pic/180508/HhF1eH9mmh.png?imageslim" alt="文件系统"></p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180508/HhF1eH9mmh.png?imageslim" alt="文件系统"></p>
 
       
     </div>
@@ -522,8 +538,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/05/10/cdecl/" rel="prev" title="六. 函数调用约定与系统调用">
-                六. 函数调用约定与系统调用 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/05/12/filesystem2/" rel="prev" title="十六. 文件系统二(创建文件系统)">
+                十六. 文件系统二(创建文件系统) <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -596,7 +612,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">31</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
