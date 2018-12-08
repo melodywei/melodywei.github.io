@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="mbr简介大家都知道，在我们按下电脑电源的时候，首先启动的BIOS(基本输入输出系统)，那么BIOS又是如何被启动的呢，谁来唤醒他呢，它又在何处运行呢。要了解这些的话，首先得介绍一下我们实模式的内存布局 实模式的内存布局 图中的内容我们现在只需要关注红色框出来的地方，可以看到BIOS的入口地址处只有16BYTE的空间，很显然，这一小块空间肯定存放的不是数据，只能是指令了，图中也写的很明显了1jmp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二. 编写mbr，让机器启动起来">
+<meta property="og:url" content="https://modifying.github.io/2018/12/08/mbr/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="mbr简介大家都知道，在我们按下电脑电源的时候，首先启动的BIOS(基本输入输出系统)，那么BIOS又是如何被启动的呢，谁来唤醒他呢，它又在何处运行呢。要了解这些的话，首先得介绍一下我们实模式的内存布局 实模式的内存布局 图中的内容我们现在只需要关注红色框出来的地方，可以看到BIOS的入口地址处只有16BYTE的空间，很显然，这一小块空间肯定存放的不是数据，只能是指令了，图中也写的很明显了1jmp">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/1H7edCBmd5.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/0aA2m7E0CB.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/l6k3aA46ml.png?imageslim">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/3H9iD4fGIA.png?imageslim">
+<meta property="og:updated_time" content="2018-12-08T15:20:09.597Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="二. 编写mbr，让机器启动起来">
+<meta name="twitter:description" content="mbr简介大家都知道，在我们按下电脑电源的时候，首先启动的BIOS(基本输入输出系统)，那么BIOS又是如何被启动的呢，谁来唤醒他呢，它又在何处运行呢。要了解这些的话，首先得介绍一下我们实模式的内存布局 实模式的内存布局 图中的内容我们现在只需要关注红色框出来的地方，可以看到BIOS的入口地址处只有16BYTE的空间，很显然，这一小块空间肯定存放的不是数据，只能是指令了，图中也写的很明显了1jmp">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/1H7edCBmd5.png?imageslim">
+
+
+
+
+
+
+  <link rel="canonical" href="https://modifying.github.io/2018/12/08/mbr/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>二. 编写mbr，让机器启动起来 | melodyのblog</title>
+  
+
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?2fa2044c78f4a75b300904570ea19f8f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/mbr/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">二. 编写mbr，让机器启动起来
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="mbr简介"><a href="#mbr简介" class="headerlink" title="mbr简介"></a>mbr简介</h1><p>大家都知道，在我们按下电脑电源的时候，首先启动的BIOS(基本输入输出系统)，那么BIOS又是如何被启动的呢，谁来唤醒他呢，它又在何处运行呢。要了解这些的话，首先得介绍一下我们实模式的内存布局</p>
+<h2 id="实模式的内存布局"><a href="#实模式的内存布局" class="headerlink" title="实模式的内存布局"></a>实模式的内存布局</h2><p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/1H7edCBmd5.png?imageslim" alt="mark"></p>
+<p>图中的内容我们现在只需要关注红色框出来的地方，可以看到BIOS的入口地址处只有16BYTE的空间，很显然，这一小块空间肯定存放的不是数据，只能是指令了，图中也写的很明显了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jmp f000:e05b</span><br></pre></td></tr></table></figure></p>
+<p>也就是跳转到了(f000 &lt;&lt; 4) + e05b = fe05b处，这里的段基址左移四位的原因是，在实模式下段基址寄存器只有16位，想一下，16位的寄存器最多访问2^16=64KB的空间，我们想访问实模式下1MB的空间的话就需要将段基址左移4位，自然就可以访问到1MB的空间了，这么做的原因也是出于兼容性而采取的曲线救国方式，虽然我们现在的OS都已经到了64位，它也还得向下兼容不是吗</p>
+<p>当我们的电脑加电的一瞬间cs：ip就会被强制置位f000:e05b了，接下来就对内存，显卡等外设进行检查，做好它的初始化工作之后就完成它的任务了，在最后的时候，BIOS会通过绝对远跳<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jmp 0:0x7c00</span><br></pre></td></tr></table></figure></p>
+<p>将接力棒交由MBR来加载我们的内核，我们初步的工作就是编写MBR。在进行内核加载之前，我们先通过MBR打印一些字符，来验证我们之前所说是否正确</p>
+<h1 id="编写MBR验证程序"><a href="#编写MBR验证程序" class="headerlink" title="编写MBR验证程序"></a>编写MBR验证程序</h1><figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;主引导程序</span></span><br><span class="line"><span class="comment">;---------------------</span></span><br><span class="line"></span><br><span class="line"><span class="meta">SECTION</span> MBR vstart=<span class="number">0x7c00</span> <span class="comment">;程序开始的地址</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, <span class="built_in">cs</span>            <span class="comment">;使用cs初始化其他的寄存器</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ds</span>, <span class="built_in">ax</span>            <span class="comment">;因为是通过jmp 0:0x7c00到的MBR开始地址</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">es</span>, <span class="built_in">ax</span>            <span class="comment">;所以此时的cs为0,也就是用0初始化其他寄存器</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ss</span>, <span class="built_in">ax</span>            <span class="comment">;此类的寄存器不同通过立即数赋值，采用ax中转</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">fs</span>, <span class="built_in">ax</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">sp</span>, <span class="number">0x7c00</span>  <span class="comment">;初始化栈指针</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;清屏利用0x10中断的0x6号功能</span></span><br><span class="line"><span class="comment">;------------------------</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, <span class="number">0x600</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">bx</span>, <span class="number">0x700</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">cx</span>, <span class="number">0</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x184f</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> <span class="number">0x10</span></span><br><span class="line">    <span class="comment">;获取光标位置</span></span><br><span class="line"><span class="comment">;---------------------</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="number">ah</span>, <span class="number">3</span>   <span class="comment">; 3号子功能获取光标位置</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="number">bh</span>, <span class="number">1</span>   <span class="comment">; bh寄存器存储带获取光标位置的页号,从0开始，此处填1可以看成将光标移动到最开始</span></span><br><span class="line">    <span class="keyword">int</span> <span class="number">0x10</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;打印字符串</span></span><br><span class="line"><span class="comment">;------------------</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, message</span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">bp</span>, <span class="built_in">ax</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">cx</span>, <span class="number">6</span>    <span class="comment">;字符串长度，不包括'\0'</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, <span class="number">0x1301</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">bx</span>, <span class="number">0x2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> <span class="number">0x10</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">jmp</span> $</span><br><span class="line"></span><br><span class="line">    message <span class="built_in">db</span> <span class="string">"My MBR"</span></span><br><span class="line">    <span class="built_in">times</span> <span class="number">510</span>-($-$$) <span class="built_in">db</span> <span class="number">0</span> </span><br><span class="line">    <span class="built_in">db</span> <span class="number">0x55</span>, <span class="number">0xaa</span></span><br></pre></td></tr></table></figure>
+<p>这段代码通过0x10号中断直接操控显卡，达到打印字符串的目的</p>
+<p>编写好后通过<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nasm -o mbr.bin mbr.S</span><br><span class="line">dd if=mbr.bin of=/home/ba/bochs/hd60M.img bs=512 count=1 conv=notrunc</span><br></pre></td></tr></table></figure></p>
+<p>对我们的汇编代码进行编译并写入之前创建的磁盘中，接下来运行bochs，应该可以看到如下结果</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/0aA2m7E0CB.png?imageslim" alt="mark"></p>
+<p>现在我们通过bochs的调试看一下程序到底是怎么执行的，和我们之前所说的是否一致</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/l6k3aA46ml.png?imageslim" alt="mark"></p>
+<p>这幅图是在我们开启bochs时显示的结果，很明显可以看到他的cs：ip寄存器的值和我们之前所说的结果一致，在这里进行跳转之后接下来肯定就是一系列的初始化工作了，我们跳过这些初始化的工作，直接进入到MBR执行的开始位置，也就是地址0x7c00处</p>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/3H9iD4fGIA.png?imageslim" alt="mark"></p>
+<p>可以看到，左边是bochs初始化完成之后的输出，这是已经运行到了0x7c00后的结果，看红框标记的地方，有没有感觉很熟悉，这就是我们mbr的第一行代码啦，接下来就会按照我们所写的那样，清屏，打印了。</p>
+<h1 id="读取硬盘"><a href="#读取硬盘" class="headerlink" title="读取硬盘"></a>读取硬盘</h1><p>前面通过打印字符串对开机启动过程做了个小小的验证，接下来需要让我们的MBR读取硬盘啦，因为加载kernel的话肯定需要从硬盘中读入数据<br><figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">; 主引导程序</span></span><br><span class="line"><span class="comment">;---------------------</span></span><br><span class="line"></span><br><span class="line"><span class="meta">%include</span> <span class="string">"boot.inc"</span></span><br><span class="line"></span><br><span class="line"><span class="meta">SECTION</span> MBR vstart=<span class="number">0x7c00</span> <span class="comment">;程序开始的地址</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, <span class="built_in">cs</span>            <span class="comment">;使用cs初始化其他的寄存器</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ds</span>, <span class="built_in">ax</span>            <span class="comment">;因为是通过jmp 0:0x7c00到的MBR开始地址</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">es</span>, <span class="built_in">ax</span>            <span class="comment">;所以此时的cs为0,也就是用0初始化其他寄存器</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ss</span>, <span class="built_in">ax</span>            <span class="comment">;此类的寄存器不同通过立即数赋值，采用ax中转</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">fs</span>, <span class="built_in">ax</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">sp</span>, <span class="number">0x7c00</span>  <span class="comment">;初始化栈指针，sp也就是32位下的esp</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;清屏利用0x10中断的0x6号功能</span></span><br><span class="line"><span class="comment">;------------------------</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, <span class="number">0x600</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">bx</span>, <span class="number">0x700</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">cx</span>, <span class="number">0</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x184f</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> <span class="number">0x10</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;获取光标位置</span></span><br><span class="line"><span class="comment">;---------------------</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="number">ah</span>, <span class="number">3</span>   <span class="comment">; 3号子功能获取光标位置</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="number">bh</span>, <span class="number">1</span>   <span class="comment">; bh寄存器存储带获取光标位置的页号,从0开始，此处填1可以看成将光标移动到最开始</span></span><br><span class="line">    <span class="keyword">int</span> <span class="number">0x10</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;打印字符串`</span></span><br><span class="line"><span class="comment">;------------------</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, message</span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">bp</span>, <span class="built_in">ax</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">cx</span>, <span class="number">6</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, <span class="number">0x1301</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">bx</span>, <span class="number">0x2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> <span class="number">0x10</span></span><br><span class="line">    </span><br><span class="line">    message <span class="built_in">db</span> <span class="string">"My MBR"</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">eax</span>, LOADER_START_SECTOR    <span class="comment">;起始扇区的lba地址</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">bx</span>, LOADER_BASE_ADDR        <span class="comment">;写入的地址</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">cx</span>, <span class="number">1</span>                       <span class="comment">;读入的扇区数</span></span><br><span class="line">    <span class="keyword">call</span> rd_disk_m_16</span><br><span class="line"></span><br><span class="line">    <span class="keyword">jmp</span> LOADER_BASE_ADDR</span><br><span class="line"></span><br><span class="line"><span class="comment">;读取n个扇区</span></span><br><span class="line"><span class="comment">;---------------------</span></span><br><span class="line"><span class="symbol">rd_disk_m_16:</span>       <span class="comment">;eax=扇区号，cx=读入的扇区数，bx=将数据写入的内存地址</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">esi</span>, <span class="built_in">eax</span>    <span class="comment">;备份eax和cx</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">di</span>, <span class="built_in">cx</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;设置要读取的扇区数</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x1f2</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">al</span>, <span class="built_in">al</span></span><br><span class="line">    <span class="keyword">out</span> <span class="built_in">dx</span>, <span class="built_in">al</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">eax</span>, <span class="built_in">esi</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;将lba地址存入0x1f3-0x1f6</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">;lba地址0-7位写入端口0x1f3</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x1f3</span></span><br><span class="line">    <span class="keyword">out</span> <span class="built_in">dx</span>, <span class="built_in">al</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">;lba地址8-15位写入端口0x1f4</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">cl</span>, <span class="number">8</span></span><br><span class="line">    <span class="keyword">shr</span> <span class="built_in">eax</span>, <span class="built_in">cl</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x1f4</span></span><br><span class="line">    <span class="keyword">out</span> <span class="built_in">dx</span>, <span class="built_in">al</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">;lba地址16-23位写入端口0x1f5</span></span><br><span class="line">    <span class="keyword">shr</span> <span class="built_in">eax</span>, <span class="built_in">cl</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x1f5</span></span><br><span class="line">    <span class="keyword">out</span> <span class="built_in">dx</span>, <span class="built_in">al</span></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">shr</span> <span class="built_in">eax</span>, <span class="built_in">cl</span></span><br><span class="line">    <span class="keyword">and</span> <span class="built_in">al</span>, <span class="number">0x0f</span></span><br><span class="line">    <span class="keyword">or</span> <span class="built_in">al</span>, <span class="number">0xe0</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x1f6</span></span><br><span class="line">    <span class="keyword">out</span> <span class="built_in">dx</span>, <span class="built_in">al</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;向0x1f7端口写入读命令</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x1f7</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">al</span>, <span class="number">0x20</span></span><br><span class="line">    <span class="keyword">out</span> <span class="built_in">dx</span>, <span class="built_in">al</span></span><br><span class="line"><span class="symbol">.not_ready:</span></span><br><span class="line">    <span class="keyword">nop</span></span><br><span class="line">    <span class="keyword">in</span> <span class="built_in">al</span>, <span class="built_in">dx</span></span><br><span class="line">    <span class="keyword">and</span> <span class="built_in">al</span>, <span class="number">0x88</span> <span class="comment">;第4位为1表示硬盘控制器已经准备号数据传输，第7位为1表示硬盘忙</span></span><br><span class="line">    <span class="keyword">cmp</span> <span class="built_in">al</span>, <span class="number">0x08</span></span><br><span class="line">    <span class="keyword">jnz</span> .not_ready</span><br><span class="line"></span><br><span class="line"><span class="comment">;从0x1f0端口读数据</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">ax</span>, <span class="built_in">di</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">256</span></span><br><span class="line">    <span class="keyword">mul</span> <span class="built_in">dx</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">cx</span>, <span class="built_in">ax</span></span><br><span class="line">    <span class="keyword">mov</span> <span class="built_in">dx</span>, <span class="number">0x1f0</span></span><br><span class="line"><span class="symbol">.go_on_read:</span></span><br><span class="line">    <span class="keyword">in</span> <span class="built_in">ax</span>, <span class="built_in">dx</span></span><br><span class="line">    <span class="keyword">mov</span> [<span class="built_in">bx</span>], <span class="built_in">ax</span></span><br><span class="line">    <span class="keyword">add</span> <span class="built_in">bx</span>, <span class="number">2</span></span><br><span class="line">    <span class="keyword">loop</span> .go_on_read</span><br><span class="line">    <span class="keyword">ret</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">times</span> <span class="number">510</span>-($-$$) <span class="built_in">db</span> <span class="number">0</span> </span><br><span class="line">    <span class="built_in">db</span> <span class="number">0x55</span>, <span class="number">0xaa</span></span><br></pre></td></tr></table></figure></p>
+<p>这是boot.inc中的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LOADER_BASE_ADDR equ 0x900</span><br><span class="line">LOADER_START_SECTOR equ 0x2</span><br></pre></td></tr></table></figure></p>
+<p>先看看程序的执行流程</p>
+<ol>
+<li>从0x7c00入口处进入mbr</li>
+<li>打印My MBR</li>
+<li>为读取磁盘操作传递参数，包括读入的扇区数，读取的数据写入的内存地址</li>
+<li>将读取到的数据写入0x900，并跳到此处去执行</li>
+</ol>
+<p>MBR中的内容差不多就多了，接下来的工作就是逐步完善内核。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/08/memory_alloc/" rel="next" title="九. 内核的内存分配">
+                <i class="fa fa-chevron-left"></i> 九. 内核的内存分配
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/08/memory_paging/" rel="prev" title="五. 开启分页机制">
+                五. 开启分页机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/melodywei" title="GitHub &rarr; https://github.com/melodywei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:melodywei97@gmail.com" title="E-Mail &rarr; mailto:melodywei97@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mbr简介"><span class="nav-number">1.</span> <span class="nav-text">mbr简介</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#实模式的内存布局"><span class="nav-number">1.1.</span> <span class="nav-text">实模式的内存布局</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#编写MBR验证程序"><span class="nav-number">2.</span> <span class="nav-text">编写MBR验证程序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#读取硬盘"><span class="nav-number">3.</span> <span class="nav-text">读取硬盘</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

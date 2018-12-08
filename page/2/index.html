@@ -341,7 +341,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/08/filesystem/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/protectedmode2/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -361,7 +361,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/05/08/filesystem/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">十五. 文件系统一(文件系统的基本概念)</a>
+                <a href="/2018/12/08/protectedmode2/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">四. 获取内存容量</a>
               
             
           </h1>
@@ -386,7 +386,7 @@
                 
               
 
-              <time title="创建时间：2018-05-08 23:54:44" itemprop="dateCreated datePublished" datetime="2018-05-08T23:54:44+08:00">2018-05-08</time>
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
             
 
             
@@ -440,13 +440,16 @@
       
         
           
-          磁盘的基础概念扇区：它是磁盘读写的基本单位。在我们个人的pc上，他的大小通常为512byte
-块：在windows中，称为簇。一个块由多个扇区组成，磁盘在进行读写数据的时候，不可能有一扇区的数据就读或写一次，而是等数据累计到一定量后，在统一进行读写，而这个数据量就叫块。在对磁盘进行格式化分区的时候可
+          前言在前面一篇文章中介绍了进入保护模式的方法：
+
+打开A20
+加载gdt
+将控制寄存器cr0的pe位置1通过这三步成功的进入到保护模式下，但是在进入保护模式之前，还需要对进行内存的检测工作，启动分页机制等等，最后还要将内核加载到内存当中。这些是之前没有完成的，接下来就要完成这些进入到保护模式之前的准
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/05/08/filesystem/#more" rel="contents">
+              <a class="btn" href="/2018/12/08/protectedmode2/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -506,7 +509,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/07/malloc&free/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/process/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -526,7 +529,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/05/07/malloc&free/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">十四. malloc&free的实现</a>
+                <a href="/2018/12/08/process/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">十二. 实现用户进程</a>
               
             
           </h1>
@@ -551,337 +554,7 @@
                 
               
 
-              <time title="创建时间：2018-05-07 18:58:26" itemprop="dateCreated datePublished" datetime="2018-05-07T18:58:26+08:00">2018-05-07</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          之前的内容中已经实现过内存分配的功能，但之前的内存管理模块中只是实现了内核空间的内存分配，而且每次分配的空间都是已页为单位，也就是只能分配页的整数倍的空间。已页为单位的内存确实是最利于操作系统管理的，但是当只需要小块内存区域的时候，之前的内存管理模块就无法完成了。所以在这里要完善之前的内存管理模块，
-          ...
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/05/07/malloc&free/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/01/syscall/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="melody">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="melodyのblog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/05/01/syscall/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">十三. 实现系统调用</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-05-01 18:18:02" itemprop="dateCreated datePublished" datetime="2018-05-01T18:18:02+08:00">2018-05-01</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          系统调用简介关于系统调用前面有过简单的介绍，这里将真正实现系统调用
-现代的操作系统中，用户的权限是有限的，它不能随意的访问系统中的资源。操作系统屏蔽了用户直接访问硬件的能力，这样做的原因主要是为了安全考虑。
-但是如果我们想控制显卡打印字符怎么呢，那就需要通过操作系统提供的接口来完成了，我们调用操作系
-          ...
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/05/01/syscall/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/30/process/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="melody">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="melodyのblog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/04/30/process/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">十二. 实现用户进程</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-04-30 23:57:08" itemprop="dateCreated datePublished" datetime="2018-04-30T23:57:08+08:00">2018-04-30</time>
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
             
 
             
@@ -941,7 +614,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/04/30/process/#more" rel="contents">
+              <a class="btn" href="/2018/12/08/process/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1001,7 +674,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/30/sync/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/protectedmode/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -1021,7 +694,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/04/30/sync/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">十一. 线程同步</a>
+                <a href="/2018/12/08/protectedmode/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">三. 保护模式</a>
               
             
           </h1>
@@ -1046,7 +719,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
                 
               
 
-              <time title="创建时间：2018-04-30 20:58:56" itemprop="dateCreated datePublished" datetime="2018-04-30T20:58:56+08:00">2018-04-30</time>
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
             
 
             
@@ -1100,14 +773,13 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
       
         
           
-          乱序输出前面完成了多线程之后，那么肯定会涉及到线程的同步问题。因为线程的执行是随机的，乱序的。虽然我们这个小kernel实现的调度器算法比较简陋，它的随机性没那么强，但是每次进行线程切换的时候，还是有可能产生问题。并且问题已经产生了。
-
-1234567891011121314151617181920
+          实模式与保护模式下的分段机制程序想要在计算机上运行，就必须将源代码编译链接成二进制的可执行文件之后才可能被操作系统加载执行。如果在加载的过程中，程序的地址都是绝对的物理地址，那么程序就必须放在一个固定的地方，那么拥有两个相同地址的程序就只能运行一个了。
+于是，分段机制就产生了。让CPU通过 段基址：
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/04/30/sync/#more" rel="contents">
+              <a class="btn" href="/2018/12/08/protectedmode/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1167,7 +839,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/30/thread/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/memory_pool/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -1187,7 +859,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/04/30/thread/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">十. 内核线程</a>
+                <a href="/2018/12/08/memory_pool/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">八. 内存池规划</a>
               
             
           </h1>
@@ -1212,7 +884,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
                 
               
 
-              <time title="创建时间：2018-04-30 00:06:30" itemprop="dateCreated datePublished" datetime="2018-04-30T00:06:30+08:00">2018-04-30</time>
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
             
 
             
@@ -1266,13 +938,13 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
       
         
           
-          实现线程函数观察一下这段c语言代码
-123456789101112void threadFunc(void *arg)&#123;	printf("thread function\n");&#125;int main()&#123;	printf("main function\n");		_begi
+          bitmap简介计算机中一些资源的数量非常庞大，比如内存容量和硬盘容量。为了使用这些资源，必须涉及到一套管理这些资源的方法，而方法中必须要构建数据结构来存储管理数据，这些数据本身也是需要占用内存的
+计算机中最小的单位是位，那么用一组二进制位串来管理其他单位大小的资源是很自然的，这组二进制位中的每一位
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/04/30/thread/#more" rel="contents">
+              <a class="btn" href="/2018/12/08/memory_pool/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1332,7 +1004,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/25/memory_alloc/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/pipe/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -1352,7 +1024,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/04/25/memory_alloc/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">九. 内核的内存分配</a>
+                <a href="/2018/12/08/pipe/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">二十三. 进程同步与进程间通信</a>
               
             
           </h1>
@@ -1377,7 +1049,504 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
                 
               
 
-              <time title="创建时间：2018-04-25 15:01:08" itemprop="dateCreated datePublished" datetime="2018-04-25T15:01:08+08:00">2018-04-25</time>
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          进程同步看一下上一节写的调用外部shell的方法。
+1234567891011121314151617181920memset(final_path, 0, sizeof(final_path));int32_t pid = fork();if (pid)&#123;     while(1);&#
+          ...
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/08/pipe/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/memory_paging/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/08/memory_paging/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">五. 开启分页机制</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          为什么有进行内存分页目前我们的小kernel还一直在分段机制下工作，因为还只有一个loader在内存中跑，所以不会出现内存不足的问题。假如说此时未开启分页功能，而物理内存空间又不足了，如下图
+
+此时进程C想要执行，但是内存空间已经不足。要么就等待进程A或者进程B执行完成，这样就有连续的内存空间了。要
+          ...
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/08/memory_paging/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/mbr/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/08/mbr/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">二. 编写mbr，让机器启动起来</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          mbr简介大家都知道，在我们按下电脑电源的时候，首先启动的BIOS(基本输入输出系统)，那么BIOS又是如何被启动的呢，谁来唤醒他呢，它又在何处运行呢。要了解这些的话，首先得介绍一下我们实模式的内存布局
+实模式的内存布局
+图中的内容我们现在只需要关注红色框出来的地方，可以看到BIOS的入口地址处只有
+          ...
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/08/mbr/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/memory_alloc/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/08/memory_alloc/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">九. 内核的内存分配</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
             
 
             
@@ -1444,7 +1613,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/04/25/memory_alloc/#more" rel="contents">
+              <a class="btn" href="/2018/12/08/memory_alloc/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1504,7 +1673,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/23/memory_pool/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/malloc&free/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -1524,7 +1693,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/04/23/memory_pool/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">八. 内存池规划</a>
+                <a href="/2018/12/08/malloc&free/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">十四. malloc&free的实现</a>
               
             
           </h1>
@@ -1549,7 +1718,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
                 
               
 
-              <time title="创建时间：2018-04-23 16:22:08" itemprop="dateCreated datePublished" datetime="2018-04-23T16:22:08+08:00">2018-04-23</time>
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
             
 
             
@@ -1603,13 +1772,12 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
       
         
           
-          bitmap简介计算机中一些资源的数量非常庞大，比如内存容量和硬盘容量。为了使用这些资源，必须涉及到一套管理这些资源的方法，而方法中必须要构建数据结构来存储管理数据，这些数据本身也是需要占用内存的
-计算机中最小的单位是位，那么用一组二进制位串来管理其他单位大小的资源是很自然的，这组二进制位中的每一位
+          之前的内容中已经实现过内存分配的功能，但之前的内存管理模块中只是实现了内核空间的内存分配，而且每次分配的空间都是已页为单位，也就是只能分配页的整数倍的空间。已页为单位的内存确实是最利于操作系统管理的，但是当只需要小块内存区域的时候，之前的内存管理模块就无法完成了。所以在这里要完善之前的内存管理模块，
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/04/23/memory_pool/#more" rel="contents">
+              <a class="btn" href="/2018/12/08/malloc&free/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1669,7 +1837,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/22/queue/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/08/list/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -1689,7 +1857,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/04/22/queue/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">从零开始，打造自己的STL(七、queue)</a>
+                <a href="/2018/12/08/list/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">从零开始，打造自己的STL(四、list)</a>
               
             
           </h1>
@@ -1714,7 +1882,7 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
                 
               
 
-              <time title="创建时间：2018-04-22 20:05:38" itemprop="dateCreated datePublished" datetime="2018-04-22T20:05:38+08:00">2018-04-22</time>
+              <time title="创建时间：2018-12-08 23:20:09" itemprop="dateCreated datePublished" datetime="2018-12-08T23:20:09+08:00">2018-12-08</time>
             
 
             
@@ -1768,180 +1936,13 @@ CPU执行任务时，需要把任务运行所需要的数据加载到寄存器�
       
         
           
-          这一部分内容是关于队列的内容，它也是一个容器适配器，只是对deque接口的简单调用，deque在前面已将有了详细的介绍，这里就不过多说明。
-在队列之后还有一个容器适配器，优先队列，因为优先队列涉及到堆排序，准备放到后面讲所有容器介绍完了之后再来介绍
-下面直接上queue的代码
-12345678910
+          简述在前面我们看了vector的实现之后相信对容器有了一定的认识。容器即为存放物件之所，它代表着一块空间。想要直观的了解一个容器，那么看懂他的空间分配策略是一个非常有效的入手方式。接下来我们就来看看STL中的list又是如何实现的吧。
+list的结构list就是我们常说的链表，说到链表相信大家就很熟
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/04/22/queue/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/04/22/stack/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="melody">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="melodyのblog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/04/22/stack/" class="post-title-link" itemprop="https://modifying.github.io/page/2/index.html">从零开始，打造自己的STL(六、stack)</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-04-22 20:00:00" itemprop="dateCreated datePublished" datetime="2018-04-22T20:00:00+08:00">2018-04-22</time>
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/STL/" itemprop="url" rel="index"><span itemprop="name">STL</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          前面一章中介绍了deque，除了 C++11 标准中的 array 和 forward_list 之外，序列式容器就已经全部介绍完了，这一部分开始就准备介绍容器适配器。容器适配器相较于容器来说，更加的简单。因为容器适配器里面所有的接口都是对容器内部方法的调用。可以把他们之间的关系当成组合关系。
-12
-          ...
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/04/22/stack/#more" rel="contents">
+              <a class="btn" href="/2018/12/08/list/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
