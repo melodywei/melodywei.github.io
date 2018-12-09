@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="代码分析代码如下：  回显服务端1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495969">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Unix网络编程(二、回显服务器代码分析和优化)">
+<meta property="og:url" content="https://modifying.github.io/2018/12/10/tcp2/index.html">
+<meta property="og:site_name" content="melodyのblog">
+<meta property="og:description" content="代码分析代码如下：  回显服务端1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495969">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/listen.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/established.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/psstat.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/normal_over.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/normal_over.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/no_z_process.png">
+<meta property="og:updated_time" content="2018-12-09T16:12:02.090Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Unix网络编程(二、回显服务器代码分析和优化)">
+<meta name="twitter:description" content="代码分析代码如下：  回显服务端1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495969">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/listen.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://modifying.github.io/2018/12/10/tcp2/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Unix网络编程(二、回显服务器代码分析和优化) | melodyのblog</title>
+  
+
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?2fa2044c78f4a75b300904570ea19f8f";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">melodyのblog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/10/tcp2/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Unix网络编程(二、回显服务器代码分析和优化)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-10 00:11:00 / 修改时间：00:12:02" itemprop="dateCreated datePublished" datetime="2018-12-10T00:11:00+08:00">2018-12-10</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/socket/" itemprop="url" rel="index"><span itemprop="name">socket</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h1><p>代码如下： </p>
+<h2 id="回显服务端"><a href="#回显服务端" class="headerlink" title="回显服务端"></a>回显服务端</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;asm-generic/errno-base.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> MAXLINE = <span class="number">4096</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> MAXLISTEN = <span class="number">1024</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> PORT = <span class="number">45678</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_socket</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_bind</span><span class="params">(<span class="keyword">int</span> sockfd, sockaddr_in* myaddr, <span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_listen</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">int</span> backlog)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_accept</span><span class="params">(<span class="keyword">int</span> sockfd, sockaddr_in* myaddr, <span class="keyword">socklen_t</span> *addrlen)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_echo</span><span class="params">(<span class="keyword">int</span> connectfd)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_socket</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sockfd = socket(domain, type, protocol);</span><br><span class="line">    <span class="keyword">if</span> (sockfd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sockfd;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_bind</span><span class="params">(<span class="keyword">int</span> sockfd, sockaddr_in* myaddr, <span class="keyword">socklen_t</span> addrlen)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = bind(sockfd, (sockaddr*)myaddr, addrlen);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>)&#123;</span><br><span class="line">        close(sockfd);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_listen</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">int</span> backlog)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = listen(sockfd, backlog);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">        close(sockfd);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_accept</span><span class="params">(<span class="keyword">int</span> sockfd, sockaddr_in* myaddr, <span class="keyword">socklen_t</span> *addrlen)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = accept(sockfd, (sockaddr*)myaddr, addrlen);</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d"</span>, errno);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_echo</span><span class="params">(<span class="keyword">int</span> connectfd)</span></span>&#123;</span><br><span class="line">    <span class="keyword">ssize_t</span> n;</span><br><span class="line">    <span class="keyword">char</span> buf[MAXLINE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">while</span> ((n = read(connectfd, buf, MAXLINE)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        write(connectfd, buf, n);</span><br><span class="line">	    <span class="built_in">memset</span>(buf, <span class="number">0</span>, MAXLINE);</span><br><span class="line">        <span class="keyword">if</span> (n &lt; <span class="number">0</span> &amp;&amp; errno == EINTR)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> listen_sock = e_socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    sockaddr_in servaddr, clientaddr;</span><br><span class="line">    bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">    servaddr.sin_family = AF_INET;</span><br><span class="line">    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">    servaddr.sin_port = htons(PORT);</span><br><span class="line">    </span><br><span class="line">    e_bind(listen_sock, &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">    e_listen(listen_sock, MAXLISTEN);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">socklen_t</span> clientlen = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> clientfd = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        clientlen = <span class="keyword">sizeof</span>(clientaddr);</span><br><span class="line">        clientfd = e_accept(listen_sock, &amp;clientaddr, &amp;clientlen);</span><br><span class="line">        <span class="keyword">if</span> (clientfd == <span class="number">-1</span>)&#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">if</span> (fork() == <span class="number">0</span>) &#123;</span><br><span class="line">            close(listen_sock);</span><br><span class="line">            my_echo(clientfd);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        close(clientfd);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="回显客户端"><a href="#回显客户端" class="headerlink" title="回显客户端"></a>回显客户端</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;asm-generic/errno-base.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> MAXLINE = <span class="number">4096</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_socket</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_cli</span><span class="params">(FILE* fd, <span class="keyword">int</span> sockfd)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_cli</span><span class="params">(FILE* fd, <span class="keyword">int</span> sockfd)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> sendline[MAXLINE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">char</span> recvline[MAXLINE]= &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">while</span> (fgets(sendline, MAXLINE, fd) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        write(sockfd, sendline, <span class="built_in">strlen</span>(sendline));</span><br><span class="line">        </span><br><span class="line">        read(sockfd, recvline, MAXLINE);</span><br><span class="line">        <span class="built_in">fputs</span>(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">	<span class="built_in">memset</span>(recvline, <span class="number">0</span>, MAXLINE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_socket</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sockfd = socket(domain, type, protocol);</span><br><span class="line">    <span class="keyword">if</span> (sockfd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sockfd;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sockfd = e_socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    sockaddr_in servaddr;</span><br><span class="line">    servaddr.sin_family = AF_INET;</span><br><span class="line">    servaddr.sin_port = htons(<span class="number">45678</span>);</span><br><span class="line">    inet_pton(AF_INET, <span class="string">"127.0.0.1"</span>, &amp;servaddr.sin_addr);</span><br><span class="line">    connect(sockfd, (sockaddr*)&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">    my_cli(<span class="built_in">stdin</span>, sockfd);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先运行service, 此时服务端会出去监听状态。<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/listen.png" alt=""></p>
+<p>然后运行client，此时客户端调用 connect 与服务端进行三次握手，建立连接之后客户端的状态会变为ESTABLISHED态。服务端accept某来自某个客户端的连接之后，会fork一个子进程，在这个子进程中去处理客户端发送过来的数据，而本身则继续去监听有没有其他连接到来。<br>所以此时客户端和服务器的状态分别是</p>
+<ol>
+<li>客户端  ESTABLISHED</li>
+<li>服务端  LISTEN</li>
+<li>服务端fork的子进程  ESTABLISHED</li>
+</ol>
+<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/established.png" alt=""></p>
+<p>用ps命令查看一下进程的关系。<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/psstat.png" alt=""><br>图上可以看到 105137 的进程为服务端进程，此时正处于accept状态。<br>105140为105137的子进程，也就是服务端fork出来的子进程，此时处于wait状态，它此时正阻塞在read函数上<br>105139为客户端进程，此时阻塞在fgets上等待用户输入</p>
+<p>现在来讨论几种情况</p>
+<h2 id="正常终止"><a href="#正常终止" class="headerlink" title="正常终止"></a>正常终止</h2><p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/normal_over.png" alt=""><br>在客户端随便输入几行数据，服务端都成功的将数据回传给客户端，客户端将服务端传回来的数据显示出来。然后，在末尾键入EOF结束符(CTRL+D)，结束客户端。  </p>
+<p>此时手速一定要快，在终端输入命令 <strong>netstat -a | grep 45678</strong> 观察服务端和客户端的状态。  </p>
+<p>客户端在收到EOF之后， <strong>my_cli</strong>函数中的<strong>fgets</strong>返回NULL，循环终止。因为我们没有主动调用close关闭socket，在进程结束之后内核帮我们主动回收打开的文件描述符(也就是将内核中维护的文件描述符的饮用计数减1)，当这个文件描述符的引用计数为0时，内核将其close。调用close时，会向服务端发送一份FIN包，此时客户端的连接状态也就变成了<strong>TIME_WAIT</strong>  </p>
+<p>说完了客户端之后再来说服务端，服务端进程一直处于listen状态毋庸置疑，重点要说的是服务端fork出的子进程。  </p>
+<p>这个子进程一直执行的代码如下<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">close(listen_sock);</span><br><span class="line">my_echo(clientfd);</span><br><span class="line"><span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_echo</span><span class="params">(<span class="keyword">int</span> connectfd)</span></span>&#123;</span><br><span class="line">    <span class="keyword">ssize_t</span> n;</span><br><span class="line">    <span class="keyword">char</span> buf[MAXLINE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">while</span> ((n = read(connectfd, buf, MAXLINE)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        write(connectfd, buf, n);  </span><br><span class="line">	    <span class="built_in">memset</span>(buf, <span class="number">0</span>, MAXLINE);</span><br><span class="line">        <span class="keyword">if</span> (n &lt; <span class="number">0</span> &amp;&amp; errno == EINTR)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>子进程在收到客户端发送过来的FIN包后，进入四次挥手状态，当他们断开连接之后，read函数返回-1，循环结束，此时子进程调用exit结束进程。这个子进程虽然结束了，但其并没有彻底的消亡。在它的pcb中还存在着一份数据要交给他的父进程。这就是Linux中著名的僵尸进程。关于僵尸进程更深入的内容，可以参考<a href="https://melodywei.github.io/2018/05/18/pipe/" target="_blank" rel="noopener">我的博客</a>。此时我们观察一下进程的状态来验证之前所说<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/normal_over.png" alt=""><br>很明显可以看到，105140号进程变为了 <strong>Z状态</strong>  </p>
+<p>当不断的有客户端连接和退出的时候，僵尸进程就会慢慢的占满内核空间，导致服务端再也无法创建进程，这个问题是必须要被解决的。</p>
+<h1 id="信号"><a href="#信号" class="headerlink" title="信号"></a>信号</h1><p>信号的概念就是告知某个进程发生了某件事情，它的本质是软件中断。比如在子进程终止的时候，子进程会给父进程发送<strong>SIGCHLD</strong>信号，父进程只需要在收到该信号的时候<strong>wait</strong>子进程即可解决僵尸进程的问题。</p>
+<p>信号通常是异步发生的。它可以由一个进程发给另一个进程，也可以由内核发给进程。接下来讲讲使用信号的基本函数。</p>
+<h2 id="sigaction"><a href="#sigaction" class="headerlink" title="sigaction"></a>sigaction</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sigaction</span><span class="params">(<span class="keyword">int</span> signo, <span class="keyword">const</span> struct sigaction *act, struct sigaction *oldact)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span>&#123;</span> </span><br><span class="line">    <span class="keyword">void</span> (*sa_handler)(<span class="keyword">int</span>);</span><br><span class="line">    <span class="keyword">sigset_t</span> sa_mask;</span><br><span class="line">    <span class="keyword">int</span> sa_flag;</span><br><span class="line">    <span class="keyword">void</span> (*sa_sigaction)(<span class="keyword">int</span>,<span class="keyword">siginfo_t</span>*,<span class="keyword">void</span>*);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>先看一下结构体 <strong>sigaction</strong><br>sa_handler 为信号处理函数<br>sa_mask 表示在当前信号处理函数被调用时，需要被阻塞的一组信号。<br>sa_flag 一个选项，有两个值比较常用</p>
+<ol>
+<li>SA_NODEFER：信号处理函数正在进行时，不堵塞对于信号处理函数自身信号功能</li>
+<li>SA_RESETHAND：当用户注册的信号处理函数被执行过一次后，该信号的处理函数被设为系统默认的处理函数。</li>
+</ol>
+<p><strong>sigaction</strong> 函数简单的理解就是在某个信号上绑定一个函数，当该信号到来时，就会执行我们自定义的处理函数中去。</p>
+<h2 id="处理僵尸进程"><a href="#处理僵尸进程" class="headerlink" title="处理僵尸进程"></a>处理僵尸进程</h2><p>接下来就使用<strong>sigaction</strong>来捕获子进程的<strong>SIGCHLD</strong>信号，防止子进程变成僵尸进程。</p>
+<p>信号处理函数<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="keyword">void</span> <span class="title">signfun</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sig_child</span><span class="params">(<span class="keyword">int</span> signo)</span></span>;</span><br><span class="line"><span class="function">signfun* <span class="title">sigaction_child</span><span class="params">(<span class="keyword">int</span> signo, signfun *func)</span></span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sig_child</span><span class="params">(<span class="keyword">int</span> signo)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> stat, pid;</span><br><span class="line">    pid = wait(&amp;stat);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">signfun* <span class="title">sigaction_child</span><span class="params">(<span class="keyword">int</span> signo, signfun *func)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">act</span>, <span class="title">oldact</span>;</span></span><br><span class="line">    act.sa_handler = func;</span><br><span class="line">    sigemptyset(&amp;act.sa_mask);</span><br><span class="line">    act.sa_flags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (sigaction(signo, &amp;act, &amp;oldact) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> SIG_ERR;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> oldact.sa_handler;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>完整代码如下<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;asm-generic/errno-base.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> MAXLINE = <span class="number">4096</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> MAXLISTEN = <span class="number">1024</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> PORT = <span class="number">45678</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="keyword">void</span> <span class="title">signfun</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_socket</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_bind</span><span class="params">(<span class="keyword">int</span> sockfd, sockaddr_in* myaddr, <span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_listen</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">int</span> backlog)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_accept</span><span class="params">(<span class="keyword">int</span> sockfd, sockaddr_in* myaddr, <span class="keyword">socklen_t</span> *addrlen)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_echo</span><span class="params">(<span class="keyword">int</span> connectfd)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sig_child</span><span class="params">(<span class="keyword">int</span> signo)</span></span>;</span><br><span class="line"><span class="function">signfun* <span class="title">sigaction_child</span><span class="params">(<span class="keyword">int</span> signo, signfun *func)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_socket</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sockfd = socket(domain, type, protocol);</span><br><span class="line">    <span class="keyword">if</span> (sockfd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sockfd;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_bind</span><span class="params">(<span class="keyword">int</span> sockfd, sockaddr_in* myaddr, <span class="keyword">socklen_t</span> addrlen)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = bind(sockfd, (sockaddr*)myaddr, addrlen);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>)&#123;</span><br><span class="line">        close(sockfd);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_listen</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">int</span> backlog)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = listen(sockfd, backlog);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">        close(sockfd);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">e_accept</span><span class="params">(<span class="keyword">int</span> sockfd, sockaddr_in* myaddr, <span class="keyword">socklen_t</span> *addrlen)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = accept(sockfd, (sockaddr*)myaddr, addrlen);</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d"</span>, errno);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_echo</span><span class="params">(<span class="keyword">int</span> connectfd)</span></span>&#123;</span><br><span class="line">    <span class="keyword">ssize_t</span> n;</span><br><span class="line">    <span class="keyword">char</span> buf[MAXLINE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">while</span> ((n = read(connectfd, buf, MAXLINE)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        write(connectfd, buf, n);</span><br><span class="line"></span><br><span class="line">	    <span class="built_in">memset</span>(buf, <span class="number">0</span>, MAXLINE);</span><br><span class="line">        <span class="keyword">if</span> (n &lt; <span class="number">0</span> &amp;&amp; errno == EINTR)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sig_child</span><span class="params">(<span class="keyword">int</span> signo)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> stat, pid;</span><br><span class="line">    pid = wait(&amp;stat);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">signfun* <span class="title">sigaction_child</span><span class="params">(<span class="keyword">int</span> signo, signfun *func)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">act</span>, <span class="title">oldact</span>;</span></span><br><span class="line">    act.sa_handler = func;</span><br><span class="line">    sigemptyset(&amp;act.sa_mask);</span><br><span class="line">    act.sa_flags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (sigaction(signo, &amp;act, &amp;oldact) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> SIG_ERR;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> oldact.sa_handler;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> listen_sock = e_socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    sockaddr_in servaddr, clientaddr;</span><br><span class="line">    bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">    servaddr.sin_family = AF_INET;</span><br><span class="line">    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">    servaddr.sin_port = htons(PORT);</span><br><span class="line">    </span><br><span class="line">    e_bind(listen_sock, &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">    e_listen(listen_sock, MAXLISTEN);</span><br><span class="line">    sigaction_child(SIGCHLD, sig_child);</span><br><span class="line">    <span class="keyword">socklen_t</span> clientlen = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> clientfd = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        clientlen = <span class="keyword">sizeof</span>(clientaddr);</span><br><span class="line">        clientfd = e_accept(listen_sock, &amp;clientaddr, &amp;clientlen);</span><br><span class="line">        <span class="keyword">if</span> (clientfd == <span class="number">-1</span>)&#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">if</span> (fork() == <span class="number">0</span>) &#123;</span><br><span class="line">            close(listen_sock);</span><br><span class="line">            my_echo(clientfd);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        close(clientfd);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>重新编译后执行结果如下，已经没有了<strong>Z进程</strong><br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/no_z_process.png" alt=""></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/01/tcp1/" rel="next" title="Unix网络编程(一、简单回显服务器)">
+                <i class="fa fa-chevron-left"></i> Unix网络编程(一、简单回显服务器)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="melody">
+            
+              <p class="site-author-name" itemprop="name">melody</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/melodywei" title="GitHub &rarr; https://github.com/melodywei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:melodywei97@gmail.com" title="E-Mail &rarr; mailto:melodywei97@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#代码分析"><span class="nav-number">1.</span> <span class="nav-text">代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#回显服务端"><span class="nav-number">1.1.</span> <span class="nav-text">回显服务端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#回显客户端"><span class="nav-number">1.2.</span> <span class="nav-text">回显客户端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正常终止"><span class="nav-number">1.3.</span> <span class="nav-text">正常终止</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#信号"><span class="nav-number">2.</span> <span class="nav-text">信号</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#sigaction"><span class="nav-number">2.1.</span> <span class="nav-text">sigaction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理僵尸进程"><span class="nav-number">2.2.</span> <span class="nav-text">处理僵尸进程</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">melody</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.5.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
