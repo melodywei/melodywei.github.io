@@ -108,26 +108,26 @@
 
 
 
-  <meta name="description" content="简介对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。 既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，详细的了解它内部的工作原理。了解他不只是因为我们作为底层开发者不搞懂原理誓不罢休的精神，更是因为要更">
+  <meta name="description" content="引发路径上一节的代码解决的单客户端连接时引发的僵尸进程问题。但是我们的服务器环境通常都是有大量的客户端同时连接过来，在这种情况下，我们的代码就显得不是那么健壮了，它仍然会引发僵尸进程的问题。1234567891011121314int main(int argc, const char *argv[])&amp;#123;    int sockfd[5];    for (int i = 0; i &amp;l">
 <meta property="og:type" content="article">
-<meta property="og:title" content="从零开始，打造自己的STL(一、简述)">
-<meta property="og:url" content="https://modifying.github.io/2018/03/01/synopsis /index.html">
+<meta property="og:title" content="Unix网络编程(三、waitpid解决多客户端连接时引发的僵尸进程问题)">
+<meta property="og:url" content="https://modifying.github.io/2018/12/11/tcp3/index.html">
 <meta property="og:site_name" content="melodyのblog">
-<meta property="og:description" content="简介对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。 既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，详细的了解它内部的工作原理。了解他不只是因为我们作为底层开发者不搞懂原理誓不罢休的精神，更是因为要更">
+<meta property="og:description" content="引发路径上一节的代码解决的单客户端连接时引发的僵尸进程问题。但是我们的服务器环境通常都是有大量的客户端同时连接过来，在这种情况下，我们的代码就显得不是那么健壮了，它仍然会引发僵尸进程的问题。1234567891011121314int main(int argc, const char *argv[])&amp;#123;    int sockfd[5];    for (int i = 0; i &amp;l">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/c8iabc3Fc8.png?imageslim">
-<meta property="og:updated_time" content="2018-12-08T16:25:16.940Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/multi_client_z_process.png">
+<meta property="og:updated_time" content="2018-12-12T16:36:46.840Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="从零开始，打造自己的STL(一、简述)">
-<meta name="twitter:description" content="简介对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。 既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，详细的了解它内部的工作原理。了解他不只是因为我们作为底层开发者不搞懂原理誓不罢休的精神，更是因为要更">
-<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/c8iabc3Fc8.png?imageslim">
+<meta name="twitter:title" content="Unix网络编程(三、waitpid解决多客户端连接时引发的僵尸进程问题)">
+<meta name="twitter:description" content="引发路径上一节的代码解决的单客户端连接时引发的僵尸进程问题。但是我们的服务器环境通常都是有大量的客户端同时连接过来，在这种情况下，我们的代码就显得不是那么健壮了，它仍然会引发僵尸进程的问题。1234567891011121314int main(int argc, const char *argv[])&amp;#123;    int sockfd[5];    for (int i = 0; i &amp;l">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/multi_client_z_process.png">
 
 
 
 
 
 
-  <link rel="canonical" href="https://modifying.github.io/2018/03/01/synopsis /">
+  <link rel="canonical" href="https://modifying.github.io/2018/12/11/tcp3/">
 
 
 
@@ -137,7 +137,7 @@
   };
 </script>
 
-  <title>从零开始，打造自己的STL(一、简述) | melodyのblog</title>
+  <title>Unix网络编程(三、waitpid解决多客户端连接时引发的僵尸进程问题) | melodyのblog</title>
   
 
 
@@ -346,7 +346,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/03/01/synopsis /">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/11/tcp3/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -363,7 +363,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">从零开始，打造自己的STL(一、简述)
+          <h1 class="post-title" itemprop="name headline">Unix网络编程(三、waitpid解决多客户端连接时引发的僵尸进程问题)
               
             
           </h1>
@@ -388,7 +388,7 @@
                 
               
 
-              <time title="创建时间：2018-03-01 22:30:00" itemprop="dateCreated datePublished" datetime="2018-03-01T22:30:00+08:00">2018-03-01</time>
+              <time title="创建时间：2018-12-11 00:11:00" itemprop="dateCreated datePublished" datetime="2018-12-11T00:11:00+08:00">2018-12-11</time>
             
 
             
@@ -405,7 +405,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-12-09 00:25:16" itemprop="dateModified" datetime="2018-12-09T00:25:16+08:00">2018-12-09</time>
+                <time title="修改时间：2018-12-13 00:36:46" itemprop="dateModified" datetime="2018-12-13T00:36:46+08:00">2018-12-13</time>
               
             
           </span>
@@ -422,7 +422,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/STL/" itemprop="url" rel="index"><span itemprop="name">STL</span></a></span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/socket/" itemprop="url" rel="index"><span itemprop="name">socket</span></a></span>
 
                 
                 
@@ -456,18 +456,17 @@
       
 
       
-        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。</p>
-<p>既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，详细的了解它内部的工作原理。了解他不只是因为我们作为底层开发者不搞懂原理誓不罢休的精神，更是因为要更好的使用它。相信有过一定模板编程的人来说，都曾今被编译器报的错误震惊过，一看没什么问题啊，怎么瞬间来了二三十个错误。最后找到可能只是一点小小的问题，这就是模板编程强大的背后带来的弊端，它的错误比较难定位，如果我们不懂原理，出了错只能是一头雾水，无从改起。</p>
-<p>说了这么多废话，就开始正式介绍STL吧。</p>
-<h1 id="STL六大组件"><a href="#STL六大组件" class="headerlink" title="STL六大组件"></a>STL六大组件</h1><p><strong>容器</strong>：容器这个概念比较重要，平常我们使用STL时接触的最多的就是容器了。故名思议，容器是我们STL中存放数据的地方，它提供各种的数据结构，如vector、list、deque、set、map等。它的主要作用是提供了数据的存放场所。</p>
-<p><strong>算法</strong>：既然有了容器提供数据的存放之所，那么肯定要有算法来操控这些数据。常见的copy，search，sort，erase算法在这里都有提供。</p>
-<p><strong>迭代器</strong>：迭代器在STL中扮演者比较重要的角色，它就像胶水一样将容器和算法这两个不相干的东西粘合起来。因为算法要作用在容器上，就必须访问得到容器内部的数据，而访问容器中的数据就是通过迭代器来实现的。这样算法就不需要直接操控容器，从而保持了容器良好的封装性。</p>
-<p><strong>容器适配器</strong>：这个东东其实是对容器的又一层封装，它改变了容器的接口，使之变的像一个新的容器一样，其底层实现原理完全是调用的容器的接口就称之为容器适配器。如stack，queue都是调用底层deque的接口实现的。这种名词讲起来不是很易懂，到后面看到源码之后就很好理解了</p>
-<p><strong>分配器</strong>：在STL中，与其说容器是用来存放数据的，不如说它提供了一种数据的存放方式。数据存放的空间是通过分配器进行分配的。这样说着有点绕，说白了。STL将数据空间的分配与释放和数据的存储分离开来，分配器就只负责空间的分配与释放，容器则负责数据的存储</p>
-<p><strong>函数对象</strong>：又称仿函数，实现了op()的类可以称之为一个函数对象。仿函数给算法提供了极大的便利性，举个栗子：在进行排序的时候，到底是从小到大排，还是从大到小排呢。STL的sort算法默认提供的是less这个仿函数，也就是从小到大排。当然我们也可以提供自己的比较函数来进行排序。</p>
-<p>借用STL源码剖析书中的一副图来描述这六大组件之间的关系</p>
-<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/c8iabc3Fc8.png?imageslim" alt="mark"></p>
-<p>简单的介绍了一下STL之后，在后面我们将会正式开始容器部分</p>
+        <h1 id="引发路径"><a href="#引发路径" class="headerlink" title="引发路径"></a>引发路径</h1><p>上一节的代码解决的单客户端连接时引发的僵尸进程问题。但是我们的服务器环境通常都是有大量的客户端同时连接过来，在这种情况下，我们的代码就显得不是那么健壮了，它仍然会引发僵尸进程的问题。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sockfd[<span class="number">5</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; ++i) &#123;</span><br><span class="line">        sockfd[i] = e_socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">        sockaddr_in servaddr;</span><br><span class="line">        servaddr.sin_family = AF_INET;</span><br><span class="line">        servaddr.sin_port = htons(<span class="number">45678</span>);</span><br><span class="line">        inet_pton(AF_INET, <span class="string">"127.0.0.1"</span>, &amp;servaddr.sin_addr);</span><br><span class="line">        connect(sockfd[i], (sockaddr*)&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// do something</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们用上面这段代码模拟5个客户端同时连接的情况。当客户端进程终止时，所有打开的文件描述符会由内核自动关闭，在每一个文件描述符被关闭的时候，都会发送一个<strong>FIN</strong>给服务端。这5个<strong>FIN</strong>包几乎同时发到服务端fork出来的对应的5个子进程，也就会导致这5个子进程几乎同时终止，子进程终止时会将<strong>SIGCHLD</strong>信号递交到他的父进程中。也就是说父进程(也就是服务端进程)几乎同时收到这5个<strong>SIGCHLD</strong>信号，这就是引发问题所经过的路径。</p>
+<h1 id="验证路径"><a href="#验证路径" class="headerlink" title="验证路径"></a>验证路径</h1><p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/multi_client_z_process.png" alt=""><br>因为目前只用了5个客户端，这种状态还不太好捕获。但是在一个高并发的服务器上，出现的概率是非常大的。从图上也可以看出，已经出现了一个子进程变成了<strong>Z状态</strong>。出现这个问题的原因也很简单。5个<strong>SIGCHLD</strong>信号都是在信号处理函数之前出现的，而我们的信号处理函数只执行一次，而UNIX的信号是异步的，前一个信号到达后并不会阻塞后一个信号。如果第一个信号到达了，此时正在执行信号处理函数，此时有另外的信号到达，这些信号是不会被处理的。</p>
+<h1 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h1><p>调用waitpid函数，在有子进程未结束的时候，不阻塞父进程。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sig_child</span><span class="params">(<span class="keyword">int</span> signo)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> stat, pid;</span><br><span class="line">    <span class="keyword">while</span> ((pid = waitpid(<span class="number">-1</span>, &amp;stat, WNOHANG)) &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这是更新后的信号处理函数。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>前篇文章基本讲述了一个处理多客户端连接的基本策略。包括</p>
+<ol>
+<li>fork子进程时，必须处理SIGCHLD信号</li>
+<li>捕获信号时，必须处理被中断的系统调用</li>
+<li>SIGCHLD信号的处理函数必须能解决僵尸进程</li>
+</ol>
 
       
     </div>
@@ -498,15 +497,15 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2018/12/11/tcp4/" rel="next" title="Unix网络编程(四、非正常连接下的错误处理)">
+                <i class="fa fa-chevron-left"></i> Unix网络编程(四、非正常连接下的错误处理)
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/03/vector/" rel="prev" title="从零开始，打造自己的STL(二、vector)">
-                从零开始，打造自己的STL(二、vector) <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -660,7 +659,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#STL六大组件"><span class="nav-number">2.</span> <span class="nav-text">STL六大组件</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#引发路径"><span class="nav-number">1.</span> <span class="nav-text">引发路径</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#验证路径"><span class="nav-number">2.</span> <span class="nav-text">验证路径</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解决方法"><span class="nav-number">3.</span> <span class="nav-text">解决方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
             
 
           </div>
