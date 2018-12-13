@@ -108,26 +108,31 @@
 
 
 
-  <meta name="description" content="简介对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。 既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，详细的了解它内部的工作原理。了解他不只是因为我们作为底层开发者不搞懂原理誓不罢休的精神，更是因为要更">
+  <meta name="description" content="I/O模型常用的I/O模型分为五大类  阻塞I/O 非阻塞I/O I/O复用 异步I/O 信号驱动式I/O  阻塞I/O最流行的i/o模型就是阻塞i/o模型，在前面试验的所有代码中，用的都是该模型。在默认情况下，所有套接字都是阻塞的。比如说调用了recvfrom函数。如果此时内核中没有数据的话，进程便会一直阻塞在该函数上，直到等到数据传递到进程中。数据的传递过程如下图所示。 非阻塞I/O在创建套">
 <meta property="og:type" content="article">
-<meta property="og:title" content="从零开始，打造自己的STL(一、简述)">
-<meta property="og:url" content="https://modifying.github.io/2018/03/01/synopsis /index.html">
+<meta property="og:title" content="Unix网络编程(四、五种I&#x2F;O模型)">
+<meta property="og:url" content="https://modifying.github.io/2018/12/14/io_model/index.html">
 <meta property="og:site_name" content="melodyのblog">
-<meta property="og:description" content="简介对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。 既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，详细的了解它内部的工作原理。了解他不只是因为我们作为底层开发者不搞懂原理誓不罢休的精神，更是因为要更">
+<meta property="og:description" content="I/O模型常用的I/O模型分为五大类  阻塞I/O 非阻塞I/O I/O复用 异步I/O 信号驱动式I/O  阻塞I/O最流行的i/o模型就是阻塞i/o模型，在前面试验的所有代码中，用的都是该模型。在默认情况下，所有套接字都是阻塞的。比如说调用了recvfrom函数。如果此时内核中没有数据的话，进程便会一直阻塞在该函数上，直到等到数据传递到进程中。数据的传递过程如下图所示。 非阻塞I/O在创建套">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/c8iabc3Fc8.png?imageslim">
-<meta property="og:updated_time" content="2018-12-08T16:25:16.940Z">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/recvfrom.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/no-block-io.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/select.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/sigaction.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/aio.png">
+<meta property="og:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/compare_io.png">
+<meta property="og:updated_time" content="2018-12-13T16:51:31.604Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="从零开始，打造自己的STL(一、简述)">
-<meta name="twitter:description" content="简介对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。 既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，详细的了解它内部的工作原理。了解他不只是因为我们作为底层开发者不搞懂原理誓不罢休的精神，更是因为要更">
-<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/c8iabc3Fc8.png?imageslim">
+<meta name="twitter:title" content="Unix网络编程(四、五种I&#x2F;O模型)">
+<meta name="twitter:description" content="I/O模型常用的I/O模型分为五大类  阻塞I/O 非阻塞I/O I/O复用 异步I/O 信号驱动式I/O  阻塞I/O最流行的i/o模型就是阻塞i/o模型，在前面试验的所有代码中，用的都是该模型。在默认情况下，所有套接字都是阻塞的。比如说调用了recvfrom函数。如果此时内核中没有数据的话，进程便会一直阻塞在该函数上，直到等到数据传递到进程中。数据的传递过程如下图所示。 非阻塞I/O在创建套">
+<meta name="twitter:image" content="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/recvfrom.png">
 
 
 
 
 
 
-  <link rel="canonical" href="https://modifying.github.io/2018/03/01/synopsis /">
+  <link rel="canonical" href="https://modifying.github.io/2018/12/14/io_model/">
 
 
 
@@ -137,7 +142,7 @@
   };
 </script>
 
-  <title>从零开始，打造自己的STL(一、简述) | melodyのblog</title>
+  <title>Unix网络编程(四、五种I/O模型) | melodyのblog</title>
   
 
 
@@ -346,7 +351,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/03/01/synopsis /">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/14/io_model/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -363,7 +368,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">从零开始，打造自己的STL(一、简述)
+          <h1 class="post-title" itemprop="name headline">Unix网络编程(四、五种I/O模型)
               
             
           </h1>
@@ -388,24 +393,12 @@
                 
               
 
-              <time title="创建时间：2018-03-01 22:30:00" itemprop="dateCreated datePublished" datetime="2018-03-01T22:30:00+08:00">2018-03-01</time>
+              <time title="创建时间：2018-12-14 00:50:00 / 修改时间：00:51:31" itemprop="dateCreated datePublished" datetime="2018-12-14T00:50:00+08:00">2018-12-14</time>
             
 
             
               
 
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-12-09 00:25:16" itemprop="dateModified" datetime="2018-12-09T00:25:16+08:00">2018-12-09</time>
               
             
           </span>
@@ -422,7 +415,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/STL/" itemprop="url" rel="index"><span itemprop="name">STL</span></a></span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/socket/" itemprop="url" rel="index"><span itemprop="name">socket</span></a></span>
 
                 
                 
@@ -456,18 +449,20 @@
       
 
       
-        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>对于每一个热爱c++的人来说，STL都是他们日常撸码、高效工作的必定会使用到的标准模板库。STL取用范型的思想，通过模板元编程，去掉了不同型别所带来的差异性，极大的提高了代码的复用性。</p>
-<p>既然STL如此强大与方便，我们当然要好好的学习它啊。仅仅停留在使用层面是是远远不够的，我们必须深入到代码内部，详细的了解它内部的工作原理。了解他不只是因为我们作为底层开发者不搞懂原理誓不罢休的精神，更是因为要更好的使用它。相信有过一定模板编程的人来说，都曾今被编译器报的错误震惊过，一看没什么问题啊，怎么瞬间来了二三十个错误。最后找到可能只是一点小小的问题，这就是模板编程强大的背后带来的弊端，它的错误比较难定位，如果我们不懂原理，出了错只能是一头雾水，无从改起。</p>
-<p>说了这么多废话，就开始正式介绍STL吧。</p>
-<h1 id="STL六大组件"><a href="#STL六大组件" class="headerlink" title="STL六大组件"></a>STL六大组件</h1><p><strong>容器</strong>：容器这个概念比较重要，平常我们使用STL时接触的最多的就是容器了。故名思议，容器是我们STL中存放数据的地方，它提供各种的数据结构，如vector、list、deque、set、map等。它的主要作用是提供了数据的存放场所。</p>
-<p><strong>算法</strong>：既然有了容器提供数据的存放之所，那么肯定要有算法来操控这些数据。常见的copy，search，sort，erase算法在这里都有提供。</p>
-<p><strong>迭代器</strong>：迭代器在STL中扮演者比较重要的角色，它就像胶水一样将容器和算法这两个不相干的东西粘合起来。因为算法要作用在容器上，就必须访问得到容器内部的数据，而访问容器中的数据就是通过迭代器来实现的。这样算法就不需要直接操控容器，从而保持了容器良好的封装性。</p>
-<p><strong>容器适配器</strong>：这个东东其实是对容器的又一层封装，它改变了容器的接口，使之变的像一个新的容器一样，其底层实现原理完全是调用的容器的接口就称之为容器适配器。如stack，queue都是调用底层deque的接口实现的。这种名词讲起来不是很易懂，到后面看到源码之后就很好理解了</p>
-<p><strong>分配器</strong>：在STL中，与其说容器是用来存放数据的，不如说它提供了一种数据的存放方式。数据存放的空间是通过分配器进行分配的。这样说着有点绕，说白了。STL将数据空间的分配与释放和数据的存储分离开来，分配器就只负责空间的分配与释放，容器则负责数据的存储</p>
-<p><strong>函数对象</strong>：又称仿函数，实现了op()的类可以称之为一个函数对象。仿函数给算法提供了极大的便利性，举个栗子：在进行排序的时候，到底是从小到大排，还是从大到小排呢。STL的sort算法默认提供的是less这个仿函数，也就是从小到大排。当然我们也可以提供自己的比较函数来进行排序。</p>
-<p>借用STL源码剖析书中的一副图来描述这六大组件之间的关系</p>
-<p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/pic/180328/c8iabc3Fc8.png?imageslim" alt="mark"></p>
-<p>简单的介绍了一下STL之后，在后面我们将会正式开始容器部分</p>
+        <h1 id="I-O模型"><a href="#I-O模型" class="headerlink" title="I/O模型"></a>I/O模型</h1><p>常用的I/O模型分为五大类</p>
+<ol>
+<li>阻塞I/O</li>
+<li>非阻塞I/O</li>
+<li>I/O复用</li>
+<li>异步I/O</li>
+<li>信号驱动式I/O</li>
+</ol>
+<h1 id="阻塞I-O"><a href="#阻塞I-O" class="headerlink" title="阻塞I/O"></a>阻塞I/O</h1><p>最流行的i/o模型就是阻塞i/o模型，在前面试验的所有代码中，用的都是该模型。在默认情况下，所有套接字都是阻塞的。<br>比如说调用了<strong>recvfrom</strong>函数。如果此时内核中没有数据的话，进程便会一直阻塞在该函数上，直到等到数据传递到进程中。<br>数据的传递过程如下图所示。<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/recvfrom.png" alt="图片来自unix网络编程"></p>
+<h1 id="非阻塞I-O"><a href="#非阻塞I-O" class="headerlink" title="非阻塞I/O"></a>非阻塞I/O</h1><p>在创建套接字的时候可以通过某些选项将该套接字设置为非阻塞套接字。那么在后面对该套接字进行读或者写操作，这些函数不会在内核中等待数据到来时才返回，而是直接返回一个<strong>EWOULDBLOCK</strong>的error。进程可以根据返回值来判断数据是否到来，从而在合适的地方去取数据。<br>以下为示意图<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/no-block-io.png" alt="图片来自unix网络编程"></p>
+<h1 id="I-O复用"><a href="#I-O复用" class="headerlink" title="I/O复用"></a>I/O复用</h1><p>I/O复用模型就是为了让进程阻塞在提供的I/O复用函数上()，而不是阻塞在真正的I/O调用之上，如下面的select模型<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/select.png" alt="图片来自unix网络编程"></p>
+<h1 id="信号驱动式I-O模型"><a href="#信号驱动式I-O模型" class="headerlink" title="信号驱动式I/O模型"></a>信号驱动式I/O模型</h1><p>信号驱动式I/O模型是指通过<strong>signaction</strong>系统调用建立对<strong>SIGIO</strong>信号的处理事件。这样可以让内核在数据到来的时候通过<strong>SIGIO</strong>信号通知用户进程，过程如下图所示<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/sigaction.png" alt="图片来自unix网络编程"></p>
+<h1 id="异步I-O模型"><a href="#异步I-O模型" class="headerlink" title="异步I/O模型"></a>异步I/O模型</h1><p>异步IO是通过调用系统提供的异步函数来实现。它们的工作机制是告知内核启动某个操作，并在操作完成之后通知用户进程。它与信号驱动模型的区别在于，信号驱动模型是内核通知我们何时启动IO操作。而该模型是内核通知我们IO操作何时完成。<br><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/aio.png" alt="图片来自unix网络编程"></p>
+<h1 id="五种模型的比较"><a href="#五种模型的比较" class="headerlink" title="五种模型的比较"></a>五种模型的比较</h1><p><img src="https://melody-pic-1254202436.cos.ap-guangzhou.myqcloud.com/service/compare_io.png" alt="图片来自unix网络编程"></p>
 
       
     </div>
@@ -498,15 +493,15 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2018/12/11/tcp4/" rel="next" title="Unix网络编程(四、非正常连接下的错误处理)">
+                <i class="fa fa-chevron-left"></i> Unix网络编程(四、非正常连接下的错误处理)
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/03/vector/" rel="prev" title="从零开始，打造自己的STL(二、vector)">
-                从零开始，打造自己的STL(二、vector) <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -660,7 +655,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#STL六大组件"><span class="nav-number">2.</span> <span class="nav-text">STL六大组件</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#I-O模型"><span class="nav-number">1.</span> <span class="nav-text">I/O模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#阻塞I-O"><span class="nav-number">2.</span> <span class="nav-text">阻塞I/O</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#非阻塞I-O"><span class="nav-number">3.</span> <span class="nav-text">非阻塞I/O</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#I-O复用"><span class="nav-number">4.</span> <span class="nav-text">I/O复用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#信号驱动式I-O模型"><span class="nav-number">5.</span> <span class="nav-text">信号驱动式I/O模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#异步I-O模型"><span class="nav-number">6.</span> <span class="nav-text">异步I/O模型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#五种模型的比较"><span class="nav-number">7.</span> <span class="nav-text">五种模型的比较</span></a></li></ol></div>
             
 
           </div>

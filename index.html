@@ -341,7 +341,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/11/tcp3/">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/14/io_model/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="melody">
@@ -361,7 +361,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2018/12/11/tcp3/" class="post-title-link" itemprop="https://modifying.github.io/index.html">Unix网络编程(三、waitpid解决多客户端连接时引发的僵尸进程问题)</a>
+                <a href="/2018/12/14/io_model/" class="post-title-link" itemprop="https://modifying.github.io/index.html">Unix网络编程(四、五种I/O模型)</a>
               
             
           </h1>
@@ -386,24 +386,12 @@
                 
               
 
-              <time title="创建时间：2018-12-11 00:11:00" itemprop="dateCreated datePublished" datetime="2018-12-11T00:11:00+08:00">2018-12-11</time>
+              <time title="创建时间：2018-12-14 00:50:00 / 修改时间：00:51:31" itemprop="dateCreated datePublished" datetime="2018-12-14T00:50:00+08:00">2018-12-14</time>
             
 
             
               
 
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-12-13 00:36:46" itemprop="dateModified" datetime="2018-12-13T00:36:46+08:00">2018-12-13</time>
               
             
           </span>
@@ -456,12 +444,20 @@
       
         
           
-          引发路径上一节的代码解决的单客户端连接时引发的僵尸进程问题。但是我们的服务器环境通常都是有大量的客户端同时连接过来，在这种情况下，我们的代码就显得不是那么健壮了，它仍然会引发僵尸进程的问题。1234567891011121314int main(int argc, const char *argv[
+          I/O模型常用的I/O模型分为五大类
+
+阻塞I/O
+非阻塞I/O
+I/O复用
+异步I/O
+信号驱动式I/O
+
+阻塞I/O最流行的i/o模型就是阻塞i/o模型，在前面试验的所有代码中，用的都是该模型。在默认情况下，所有套接字都是阻塞的。比如说调用了recvfrom函数。如果此时内核中没有数据的话，进
           ...
           <!--noindex-->
           
             <div class="post-button text-center">
-              <a class="btn" href="/2018/12/11/tcp3/#more" rel="contents">
+              <a class="btn" href="/2018/12/14/io_model/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -643,6 +639,186 @@ accept返回前连接终止当服务端接收到客户端的连接请求后，�
           
             <div class="post-button text-center">
               <a class="btn" href="/2018/12/11/tcp4/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/12/11/tcp3/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="melody">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="melodyのblog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/11/tcp3/" class="post-title-link" itemprop="https://modifying.github.io/index.html">Unix网络编程(三、waitpid解决多客户端连接时引发的僵尸进程问题)</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-11 00:11:00" itemprop="dateCreated datePublished" datetime="2018-12-11T00:11:00+08:00">2018-12-11</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-13 00:36:46" itemprop="dateModified" datetime="2018-12-13T00:36:46+08:00">2018-12-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/socket/" itemprop="url" rel="index"><span itemprop="name">socket</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          引发路径上一节的代码解决的单客户端连接时引发的僵尸进程问题。但是我们的服务器环境通常都是有大量的客户端同时连接过来，在这种情况下，我们的代码就显得不是那么健壮了，它仍然会引发僵尸进程的问题。1234567891011121314int main(int argc, const char *argv[
+          ...
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/11/tcp3/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1959,187 +2135,6 @@ exec会把一个可执行文件的绝对路径作为参数，把当前正在运�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://modifying.github.io/2018/05/14/filesystem4/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="melody">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="melodyのblog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/05/14/filesystem4/" class="post-title-link" itemprop="https://modifying.github.io/index.html">十八. 文件系统四(文件的读写与删除)</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-05-14 20:30:00" itemprop="dateCreated datePublished" datetime="2018-05-14T20:30:00+08:00">2018-05-14</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2018-12-09 00:21:55" itemprop="dateModified" datetime="2018-12-09T00:21:55+08:00">2018-12-09</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/kernel/" itemprop="url" rel="index"><span itemprop="name">kernel</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          写入文件文件的数据都是记录在inode中的文件块中，在该文件系统的设计中，只用了12个直接块和一个间接块来存储文件，所以一个文件最大可以存放 140 * 512字节的数据。
-写文件的过程对文件块和扇区的分配过程，根据当前要写入的数据量大小，来判断是否需要分配新的数据块。如果12个直接块不够存储该数据
-          ...
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2018/05/14/filesystem4/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-       
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2189,7 +2184,7 @@ exec会把一个可执行文件的绝对路径作为参数，把当前正在运�
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-count">35</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
